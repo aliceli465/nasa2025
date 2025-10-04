@@ -101,17 +101,6 @@ export const BentoCard = ({ src, title, description, isComingSoon }) => {
 const Features = () => (
   <section className="bg-black pb-52">
     <div className="container mx-auto px-3 md:px-10">
-      <div className="px-5 py-32">
-        <p className="font-circular-web text-lg text-[#dfdff2]">
-          We're thinking out of the box, and going to orbit.
-        </p>
-        <p className="max-w-md font-circular-web text-lg text-[#dfdff2] opacity-50">
-          Our Low Earth Orbit (LEO) satellites optimize orbital exposure for
-          infinite cooling and heating, slashing energy waste while maximizing
-          compute power.
-        </p>
-      </div>
-
       <BentoTilt className="bento-tilt_1 relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
         <BentoCard
           src="videos/vid3.mp4"
@@ -120,7 +109,7 @@ const Features = () => (
               40% fast<b>e</b>r
             </>
           }
-          description="Half an orbit is in Earth's shadow at -150°C, the perfect GPU habitat: colder, cheaper, faster."
+          description="Microgravity and cryogenic LEO conditions cut heat limits, boosting GPU clocks by up to 40%."
         />
       </BentoTilt>
 
@@ -133,7 +122,7 @@ const Features = () => (
                 AI <b>R</b>outing
               </>
             }
-            description="Azure ML navigates the tricky satellite terrain and schedules uploads, computes, and downloads at the best times."
+            description="We trained an Azure ML model to schedule uploads, computes, and downloads at the best times for each task."
           />
         </BentoTilt>
 
@@ -142,10 +131,10 @@ const Features = () => (
             src="videos/vid4.mp4"
             title={
               <>
-                Visi<b>b</b>ility
+                Acc<b>ess</b>ibility
               </>
             }
-            description="Operating in LEO gives us 40% Earth visibility at any moment. Compute fast, and give results even faster."
+            description="LEO satellites operate close enough to reduce latency for instant AI and edge processing."
           />
         </BentoTilt>
 
@@ -180,7 +169,7 @@ const Features = () => (
                 S<b>cal</b>ablity
               </>
             }
-            description="An API that works. Enterprise-grade infra from day one. Infinite scale."
+            description="We are API-first built on Azure Cloud, ensuring enterprise-grade reliability and scalability."
           />
         </BentoTilt>
       </div>

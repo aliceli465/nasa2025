@@ -14,18 +14,45 @@ const EarthSatelliteScene = ({
   const previousMousePosition = useRef({ x: 0, y: 0 });
   const animationIdRef = useRef(null);
   const isVisibleRef = useRef(true);
-  
+
   // State to track which satellites are blue
   const [blueSatellites, setBlueSatellites] = useState(new Set());
   // State to track downlink animations (stores animation end times)
   const [downlinkAnimations, setDownlinkAnimations] = useState(new Map());
   const downlinkAnimationsRef = useRef(new Map());
   const satellitesRef = useRef([]);
+  // State to track satellite battery levels
+  const [satelliteBatteries, setSatelliteBatteries] = useState({});
+  const lastBatteryUpdateRef = useRef(Date.now());
+
+  // Terminal logs state
+  const [terminalLogs, setTerminalLogs] = useState([
+    "System initialized...",
+    "Satellites deployed successfully",
+    "Battery monitoring active",
+    "Orbital tracking enabled",
+  ]);
+
+  // Function to add logs to terminal
+  const addLog = (message) => {
+    setTerminalLogs((prev) => [...prev.slice(-9), message]); // Keep last 10 logs
+  };
+
+  // Form state
+  const [formData, setFormData] = useState({
+    taskName: "",
+    clientName: "",
+    filesNecessary: "",
+    size: "",
+    priority: "medium",
+    description: "",
+  });
+  const [isFormVisible, setIsFormVisible] = useState(false);
   const downlinkBeamsRef = useRef([]);
 
   // Toggle satellite color
   const toggleSatelliteColor = (satelliteIndex) => {
-    setBlueSatellites(prev => {
+    setBlueSatellites((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(satelliteIndex)) {
         newSet.delete(satelliteIndex);
@@ -36,14 +63,35 @@ const EarthSatelliteScene = ({
     });
   };
 
+  // Form handlers
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleFileUpload = (e) => {
+    const files = Array.from(e.target.files);
+    console.log("Files uploaded:", files);
+    // Handle file upload logic here
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Form submitted:", formData);
+    // Handle form submission logic here
+  };
+
   // Trigger satellite downlink animation
   const triggerSatelliteDownlink = (satelliteIndex) => {
     const animationDuration = 1000; // 1 second
     const endTime = Date.now() + animationDuration;
-    
+
     // Update both state and ref
     downlinkAnimationsRef.current.set(satelliteIndex, endTime);
-    setDownlinkAnimations(prev => {
+    setDownlinkAnimations((prev) => {
       const newMap = new Map(prev);
       newMap.set(satelliteIndex, endTime);
       return newMap;
@@ -130,14 +178,14 @@ const EarthSatelliteScene = ({
     // Function to create realistic satellite geometry
     const createSatelliteGeometry = () => {
       const satelliteGroup = new THREE.Group();
-      
+
       // Store materials for color changing
       const materials = [];
 
       // Main satellite body - cylindrical with rounded edges
       const bodyGeometry = new THREE.CylinderGeometry(0.8, 0.8, 1.5, 16);
       const bodyMaterial = new THREE.MeshPhongMaterial({
-        color: 0xc0c0c0,  // Silver/metallic color
+        color: 0xc0c0c0, // Silver/metallic color
         emissive: 0x90ee90,
         emissiveIntensity: 0.6,
         specular: 0xffffff,
@@ -151,7 +199,7 @@ const EarthSatelliteScene = ({
 
       // Solar panel materials with rounded corners
       const solarPanelMaterial = new THREE.MeshPhongMaterial({
-        color: 0x000080,  // Dark blue solar panel color
+        color: 0x000080, // Dark blue solar panel color
         emissive: 0x90ee90,
         emissiveIntensity: 0.5,
         specular: 0x4444ff,
@@ -165,7 +213,7 @@ const EarthSatelliteScene = ({
       for (let i = 0; i < panelSegments; i++) {
         const panelGeometry = new THREE.BoxGeometry(0.9, 0.02, 1.4);
         const panel = new THREE.Mesh(panelGeometry, solarPanelMaterial);
-        panel.position.set(-2.5 - (i * 0.95), 0, 0);
+        panel.position.set(-2.5 - i * 0.95, 0, 0);
         panel.castShadow = true;
         panel.receiveShadow = true;
         satelliteGroup.add(panel);
@@ -175,7 +223,7 @@ const EarthSatelliteScene = ({
       for (let i = 0; i < panelSegments; i++) {
         const panelGeometry = new THREE.BoxGeometry(0.9, 0.02, 1.4);
         const panel = new THREE.Mesh(panelGeometry, solarPanelMaterial);
-        panel.position.set(2.5 + (i * 0.95), 0, 0);
+        panel.position.set(2.5 + i * 0.95, 0, 0);
         panel.castShadow = true;
         panel.receiveShadow = true;
         satelliteGroup.add(panel);
@@ -183,7 +231,7 @@ const EarthSatelliteScene = ({
 
       // Solar panel support arms - smoother cylinders
       const armMaterial = new THREE.MeshPhongMaterial({
-        color: 0x808080,  // Gray metal color
+        color: 0x808080, // Gray metal color
         emissive: 0x90ee90,
         emissiveIntensity: 0.5,
         specular: 0xffffff,
@@ -206,9 +254,17 @@ const EarthSatelliteScene = ({
       satelliteGroup.add(rightArm);
 
       // Communication dish - smoother sphere segment
-      const dishGeometry = new THREE.SphereGeometry(0.4, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+      const dishGeometry = new THREE.SphereGeometry(
+        0.4,
+        16,
+        8,
+        0,
+        Math.PI * 2,
+        0,
+        Math.PI / 2
+      );
       const dishMaterial = new THREE.MeshPhongMaterial({
-        color: 0xe0e0e0,  // Light gray/white dish color
+        color: 0xe0e0e0, // Light gray/white dish color
         emissive: 0x90ee90,
         emissiveIntensity: 0.7,
         specular: 0xffffff,
@@ -224,7 +280,7 @@ const EarthSatelliteScene = ({
       // Antenna mast
       const antennaGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8);
       const antennaMaterial = new THREE.MeshPhongMaterial({
-        color: 0xa0a0a0,  // Light gray metal color
+        color: 0xa0a0a0, // Light gray metal color
         emissive: 0x90ee90,
         emissiveIntensity: 0.7,
         specular: 0xffffff,
@@ -237,19 +293,19 @@ const EarthSatelliteScene = ({
 
       // Small sensor spheres for detail
       const sensorMaterial = new THREE.MeshPhongMaterial({
-        color: 0x606060,  // Dark gray sensor color
+        color: 0x606060, // Dark gray sensor color
         emissive: 0x90ee90,
         emissiveIntensity: 0.8,
         specular: 0xffffff,
         shininess: 200,
       });
       materials.push(sensorMaterial);
-      
+
       const sensorGeometry = new THREE.SphereGeometry(0.1, 8, 6);
       const sensor1 = new THREE.Mesh(sensorGeometry, sensorMaterial);
       sensor1.position.set(0.5, 0.3, 0.5);
       satelliteGroup.add(sensor1);
-      
+
       const sensor2 = new THREE.Mesh(sensorGeometry, sensorMaterial);
       sensor2.position.set(-0.5, 0.3, 0.5);
       satelliteGroup.add(sensor2);
@@ -307,14 +363,66 @@ const EarthSatelliteScene = ({
       r * Math.sin((5 * Math.PI) / 3)
     );
     scene.add(satellite6);
-    
+
     // Store satellite references
-    satellitesRef.current = [satellite1, satellite2, satellite3, satellite4, satellite5, satellite6];
+    satellitesRef.current = [
+      satellite1,
+      satellite2,
+      satellite3,
+      satellite4,
+      satellite5,
+      satellite6,
+    ];
+
+    // Add simple text label to first satellite
+    const createTextSprite = (text) => {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      canvas.width = 64;
+      canvas.height = 64;
+
+      // Fill with white background
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      context.font = "bold 32px Arial";
+      context.fillStyle = "#000000";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+
+      context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMaterial = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+      });
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.scale.set(3, 3, 1);
+
+      return sprite;
+    };
+
+    // Add labels to all satellites
+    const satelliteLabels = [];
+    satellitesRef.current.forEach((satellite, index) => {
+      const label = createTextSprite((index + 1).toString());
+      label.position.y = 3; // Position above the satellite
+      satellite.add(label);
+      satelliteLabels.push(label);
+    });
+
+    // Initialize battery levels to 100%
+    const initialBatteries = {};
+    satellitesRef.current.forEach((_, index) => {
+      initialBatteries[index] = 100;
+    });
+    setSatelliteBatteries(initialBatteries);
 
     // Create downlink beams
     const createDownlinkBeam = () => {
       const beamGroup = new THREE.Group();
-      
+
       // Main beam line - using BoxGeometry for better control
       const beamGeometry = new THREE.BoxGeometry(0.1, 0.1, 1);
       const beamMaterial = new THREE.MeshPhongMaterial({
@@ -324,10 +432,10 @@ const EarthSatelliteScene = ({
         transparent: true,
         opacity: 0.7,
       });
-      
+
       const beam = new THREE.Mesh(beamGeometry, beamMaterial);
       beamGroup.add(beam);
-      
+
       return beamGroup;
     };
 
@@ -338,9 +446,9 @@ const EarthSatelliteScene = ({
       scene.add(beam);
       return beam;
     });
-    
+
     let theta = 0;
-    const dTheta = (2 * Math.PI) / 2000; // Slower orbital speed
+    const dTheta = (2 * Math.PI) / 3000; // Even slower orbital speed
     let dx = enableOrbitControls ? 0 : 0.01;
     let dy = enableOrbitControls ? 0 : -0.01;
     let dz = enableOrbitControls ? 0 : -0.05;
@@ -469,17 +577,51 @@ const EarthSatelliteScene = ({
       satellite6.position.z = r * Math.sin(theta + (5 * Math.PI) / 3);
 
       // Update satellite orientations to face Earth
-      const satellites = [satellite1, satellite2, satellite3, satellite4, satellite5, satellite6];
+      const satellites = [
+        satellite1,
+        satellite2,
+        satellite3,
+        satellite4,
+        satellite5,
+        satellite6,
+      ];
+
+      // Update battery levels based on position
+      const currentTime = Date.now();
+      const timeSinceLastUpdate = currentTime - lastBatteryUpdateRef.current;
+
+      if (timeSinceLastUpdate > 300) {
+        // Update every 300ms
+        setSatelliteBatteries((prevBatteries) => {
+          const newBatteries = { ...prevBatteries };
+
+          satellites.forEach((satellite, index) => {
+            const currentBattery = newBatteries[index] || 100;
+
+            if (satellite.position.x < -5) {
+              // In shadow - discharge by 1%
+              newBatteries[index] = Math.max(0, currentBattery - 1);
+            } else if (satellite.position.x > 5 && currentBattery < 100) {
+              // In sunlight and not full - charge by 1%
+              newBatteries[index] = Math.min(100, currentBattery + 1);
+            }
+          });
+
+          lastBatteryUpdateRef.current = currentTime;
+          return newBatteries;
+        });
+      }
+
       satellites.forEach((satellite, index) => {
         // Make satellites face Earth
         satellite.lookAt(earthVec);
-        
+
         // Change satellite glow based on Earth's shadow with smooth transition
         const materials = satellite.userData.materials;
         if (materials) {
           // Check if this satellite should be blue
           const isBlue = satellite.userData.isBlue || false;
-          
+
           if (isBlue) {
             // Blue color for toggled satellites
             const blueColor = new THREE.Color(0x0080ff);
@@ -488,75 +630,51 @@ const EarthSatelliteScene = ({
               material.emissiveIntensity = 1.2; // Bright blue glow
             });
           } else {
-            // Normal red/green transition
-            // Calculate transition factor based on position
-            // Use a smooth transition zone around x = 0
-            const transitionZone = 5; // Width of transition zone
-            let transitionFactor;
-            
-            if (satellite.position.x < -transitionZone) {
-              transitionFactor = 0; // Fully in shadow (red)
-            } else if (satellite.position.x > transitionZone) {
-              transitionFactor = 1; // Fully in sunlight (green)
-            } else {
-              // Smooth transition using cosine interpolation
-              transitionFactor = (Math.sin((satellite.position.x / transitionZone) * Math.PI / 2) + 1) / 2;
-            }
-            
-            // Interpolate between red and green
-            const redColor = new THREE.Color(0xfa1937);
+            // Satellites stay green all the time
             const greenColor = new THREE.Color(0x90ee90);
-            const emissiveColor = new THREE.Color();
-            emissiveColor.lerpColors(redColor, greenColor, transitionFactor);
-            
-            // Interpolate intensity
-            const shadowIntensity = 0.8;
-            const sunlightIntensity = 1.0;
-            const emissiveIntensity = shadowIntensity + (sunlightIntensity - shadowIntensity) * transitionFactor;
-            
             materials.forEach((material) => {
-              material.emissive = emissiveColor;
-              material.emissiveIntensity = emissiveIntensity;
+              material.emissive = greenColor;
+              material.emissiveIntensity = 1.0;
             });
           }
         }
       });
 
       // Update downlink beams
-      const currentTime = Date.now();
+      const beamUpdateTime = Date.now();
       downlinkBeamsRef.current.forEach((beam, index) => {
         const satellite = satellitesRef.current[index];
-        
+
         // Check if this satellite has an active animation
         let isAnimating = false;
         let animationEndTime = null;
-        
+
         // Access the latest animations through ref
         const endTime = downlinkAnimationsRef.current.get(index);
-        if (endTime && currentTime < endTime) {
+        if (endTime && beamUpdateTime < endTime) {
           isAnimating = true;
           animationEndTime = endTime;
         }
-        
+
         if (isAnimating && satellite) {
           beam.visible = true;
-          
+
           // Calculate direction and distance from satellite to Earth center
           const satellitePos = satellite.position.clone();
           const direction = earthVec.clone().sub(satellitePos);
           const distance = direction.length();
-          
+
           // Position beam group at satellite location
           beam.position.copy(satellitePos);
-          
+
           // Point beam toward Earth
           beam.lookAt(earthVec);
-          
+
           // Calculate animation progress (0 to 1)
           const animationDuration = 1000; // 1 second
           const timeLeft = animationEndTime - currentTime;
-          const progress = 1 - (timeLeft / animationDuration);
-          
+          const progress = 1 - timeLeft / animationDuration;
+
           // Animate beam appearance with fade in/out
           let opacity = 0.7;
           if (progress < 0.2) {
@@ -566,13 +684,12 @@ const EarthSatelliteScene = ({
             // Fade out
             opacity = ((1 - progress) / 0.2) * 0.7;
           }
-          
+
           // Scale and position the main beam box to extend toward Earth
           const mainBeam = beam.children[0];
           mainBeam.scale.set(1, 1, distance * 0.8); // Scale Z to reach toward Earth
           mainBeam.position.set(0, 0, distance * 0.4); // Move beam toward Earth (positive Z)
           mainBeam.material.opacity = opacity;
-          
         } else {
           beam.visible = false;
         }
@@ -639,9 +756,16 @@ const EarthSatelliteScene = ({
       cloudMaterial.dispose();
       starGeometry.dispose();
       starMaterial.dispose();
-      
+
       // Dispose of satellite geometries and materials
-      const satellites = [satellite1, satellite2, satellite3, satellite4, satellite5, satellite6];
+      const satellites = [
+        satellite1,
+        satellite2,
+        satellite3,
+        satellite4,
+        satellite5,
+        satellite6,
+      ];
       satellites.forEach((satellite) => {
         satellite.traverse((child) => {
           if (child.geometry) child.geometry.dispose();
@@ -654,7 +778,7 @@ const EarthSatelliteScene = ({
   // Separate effect to handle color changes without rebuilding the scene
   useEffect(() => {
     if (satellitesRef.current.length === 0) return;
-    
+
     // Update satellite colors based on blueSatellites state
     satellitesRef.current.forEach((satellite, index) => {
       if (satellite && satellite.userData.materials) {
@@ -667,7 +791,7 @@ const EarthSatelliteScene = ({
   useEffect(() => {
     const cleanup = () => {
       const currentTime = Date.now();
-      
+
       // Clean up ref
       const newRefMap = new Map();
       for (const [key, endTime] of downlinkAnimationsRef.current) {
@@ -676,9 +800,9 @@ const EarthSatelliteScene = ({
         }
       }
       downlinkAnimationsRef.current = newRefMap;
-      
+
       // Clean up state
-      setDownlinkAnimations(prev => {
+      setDownlinkAnimations((prev) => {
         const newMap = new Map();
         for (const [key, endTime] of prev) {
           if (currentTime < endTime) {
@@ -688,13 +812,14 @@ const EarthSatelliteScene = ({
         return newMap;
       });
     };
-    
+
     const interval = setInterval(cleanup, 1000); // Clean up every second
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div style={{ position: "relative", width, height }}>
+      {/* Three.js Scene - Full width */}
       <div
         ref={containerRef}
         style={{
@@ -705,89 +830,232 @@ const EarthSatelliteScene = ({
           cursor: enableOrbitControls ? "grab" : "default",
         }}
       />
-      
-      {/* Satellite control buttons */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "20px",
-          right: "20px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          zIndex: 10,
-        }}
-      >
-        {[0, 1, 2, 3, 4, 5].map((index) => (
-          <div
-            key={index}
-            style={{
-              display: "flex",
-              gap: "8px",
-              alignItems: "center",
-            }}
-          >
-            <button
-              onClick={() => toggleSatelliteColor(index)}
-              style={{
-                padding: "8px 12px",
-                backgroundColor: blueSatellites.has(index) ? "#0080ff" : "#333",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                fontSize: "12px",
-                fontWeight: "bold",
-                transition: "all 0.3s ease",
-                boxShadow: blueSatellites.has(index) 
-                  ? "0 0 10px rgba(0, 128, 255, 0.5)" 
-                  : "0 2px 4px rgba(0, 0, 0, 0.2)",
-                minWidth: "80px",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = "scale(1.05)";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = "scale(1)";
-              }}
-            >
-              Sat {index + 1}
-            </button>
-            
-            <button
-              onClick={() => triggerSatelliteDownlink(index)}
-              style={{
-                padding: "8px 12px",
-                backgroundColor: downlinkAnimations.has(index) && Date.now() < downlinkAnimations.get(index) ? "#00ffff" : "#333",
-                color: downlinkAnimations.has(index) && Date.now() < downlinkAnimations.get(index) ? "#000" : "#fff",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                fontSize: "12px",
-                fontWeight: "bold",
-                transition: "all 0.3s ease",
-                boxShadow: downlinkAnimations.has(index) && Date.now() < downlinkAnimations.get(index)
-                  ? "0 0 10px rgba(0, 255, 255, 0.5)"
-                  : "0 2px 4px rgba(0, 0, 0, 0.2)",
-                minWidth: "80px",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = "scale(1.05)";
-                e.target.style.boxShadow = downlinkAnimations.has(index) && Date.now() < downlinkAnimations.get(index)
-                  ? "0 0 15px rgba(0, 255, 255, 0.7)"
-                  : "0 4px 8px rgba(0, 0, 0, 0.3)";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = "scale(1)";
-                e.target.style.boxShadow = downlinkAnimations.has(index) && Date.now() < downlinkAnimations.get(index)
-                  ? "0 0 10px rgba(0, 255, 255, 0.5)"
-                  : "0 2px 4px rgba(0, 0, 0, 0.2)";
-              }}
-            >
-              📡 SEND
-            </button>
+
+      {/* Color Legend */}
+      <div className="mt-16 absolute top-4 left-4 z-20 bg-black/80 backdrop-blur-md rounded-lg p-4 border border-white/20">
+        <h4 className="text-[#dfdff2] text-sm font-bold mb-3">
+          Satellite Status
+        </h4>
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+            <span className="text-[#dfdff2] text-xs">Available</span>
           </div>
-        ))}
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
+            <span className="text-[#dfdff2] text-xs">In Use</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Column Container */}
+      <div className="mt-8 absolute top-16 right-4 w-80 h-3/4 z-50 flex flex-col">
+        {/* Terminal Component - Top */}
+        <div className="bg-black/90 backdrop-blur-md rounded-lg p-3 border border-white/20 mb-4 flex-shrink-0">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="flex gap-1">
+              <div className="w-2 h-2 rounded-full bg-red-500"></div>
+              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            </div>
+            <span className="text-[#dfdff2] text-xs font-mono">
+              System Logs
+            </span>
+          </div>
+          <div className="h-32 overflow-y-auto bg-black/50 rounded p-2 font-mono text-xs">
+            {terminalLogs.map((log, index) => (
+              <div key={index} className="text-green-400 mb-1">
+                <span className="text-gray-500">
+                  [{new Date().toLocaleTimeString()}]
+                </span>{" "}
+                {log}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Form Panel - Bottom */}
+        <div className="flex-1 bg-black/90 backdrop-blur-md border-l border-white/10 p-7 overflow-y-auto min-h-0">
+          {/* Client Form */}
+          <div>
+            <div className="mt-8 flex justify-between items-center mb-5">
+              <h3 className="text-[#dfdff2] text-base font-bold m-0">
+                Submit Computing Task
+              </h3>
+              <button
+                onClick={() => setIsFormVisible(!isFormVisible)}
+                className="bg-none border-none text-[#dfdff2] cursor-pointer text-lg p-1"
+              >
+                {isFormVisible ? "−" : "+"}
+              </button>
+            </div>
+
+            {isFormVisible && (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <div>
+                  <label className="text-[#dfdff2] text-sm mb-1 block">
+                    Task Name
+                  </label>
+                  <input
+                    type="text"
+                    name="taskName"
+                    value={formData.taskName}
+                    onChange={handleInputChange}
+                    placeholder="e.g., AI Model Training"
+                    className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[#dfdff2] text-sm mb-1 block">
+                    Client Name
+                  </label>
+                  <input
+                    type="text"
+                    name="clientName"
+                    value={formData.clientName}
+                    onChange={handleInputChange}
+                    placeholder="Your company name"
+                    className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[#dfdff2] text-sm mb-1 block">
+                    Files Necessary
+                  </label>
+                  <input
+                    type="text"
+                    name="filesNecessary"
+                    value={formData.filesNecessary}
+                    onChange={handleInputChange}
+                    placeholder="e.g., dataset.csv, model.py"
+                    className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[#dfdff2] text-sm mb-1 block">
+                    Data Size
+                  </label>
+                  <select
+                    name="size"
+                    value={formData.size}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                    required
+                  >
+                    <option value="">Select size</option>
+                    <option value="small">Small (&lt; 1GB)</option>
+                    <option value="medium">Medium (1-10GB)</option>
+                    <option value="large">Large (10-100GB)</option>
+                    <option value="xlarge">Extra Large (&gt; 100GB)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[#dfdff2] text-sm mb-1 block">
+                    Priority
+                  </label>
+                  <select
+                    name="priority"
+                    value={formData.priority}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[#dfdff2] text-sm mb-1 block">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Describe your computing task..."
+                    rows="3"
+                    className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm resize-y"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[#dfdff2] text-sm mb-1 block">
+                    Upload Files
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={handleFileUpload}
+                    className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full p-3 bg-[#dfdff2] text-black border-none rounded text-base font-bold cursor-pointer transition-all duration-300 hover:bg-[#c0c0d0] hover:-translate-y-0.5"
+                >
+                  Submit Task
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Satellite Battery Table */}
+      <div className="absolute bottom-4 left-4 z-20 bg-black/80 backdrop-blur-md rounded-lg p-4 border border-white/20">
+        <h4 className="text-[#dfdff2] text-sm font-bold mb-3">
+          Satellite Battery Levels
+        </h4>
+        <div className="space-y-2">
+          {satellitesRef.current.map((satellite, index) => {
+            // Get actual battery level from state
+            const batteryLevel = satelliteBatteries[index] || 100;
+            let batteryColor = "bg-gray-500";
+
+            // Determine color based on battery level only
+            if (batteryLevel >= 80) {
+              // High battery - green
+              batteryColor = "bg-green-500";
+            } else if (batteryLevel >= 50) {
+              // Medium battery - yellow
+              batteryColor = "bg-yellow-500";
+            } else {
+              // Low battery - red
+              batteryColor = "bg-red-500";
+            }
+
+            return (
+              <div
+                key={index}
+                className="flex items-center justify-between gap-3 min-w-[200px]"
+              >
+                <span className="text-[#dfdff2] text-xs font-medium">
+                  Satellite {index + 1}
+                </span>
+                <div className="flex items-center gap-2">
+                  <div className="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${batteryColor} transition-all duration-300`}
+                      style={{ width: `${batteryLevel}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-[#dfdff2] text-xs w-8 text-right">
+                    {Math.round(batteryLevel)}%
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

@@ -57,7 +57,7 @@ const DemoLink = () => {
           containerClass="mt-5 pointer-events-none mix-blend-difference relative z-10"
         />
         <br />
-        <p className="mt-3 max-w-sm font-circular-web text-[#dfdff2]">
+        <p className="mt-3 text-xl font-circular-web text-[#dfdff2]">
           Tech giants need massive compute. We're here. The space economy is
           here. Your next breakthrough is in orbit.
         </p>
