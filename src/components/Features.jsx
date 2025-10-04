@@ -109,7 +109,7 @@ const Features = () => (
               40% fast<b>e</b>r
             </>
           }
-          description="Half an orbit is in Earth's shadow at -150°C, the perfect GPU habitat: colder, cheaper, faster."
+          description="Microgravity and cryogenic LEO conditions cut heat limits, boosting GPU clocks by up to 40%."
         />
       </BentoTilt>
 
@@ -122,7 +122,7 @@ const Features = () => (
                 AI <b>R</b>outing
               </>
             }
-            description="Azure ML navigates the tricky satellite terrain and schedules uploads, computes, and downloads at the best times."
+            description="We trained an Azure ML model to schedule uploads, computes, and downloads at the best times for each task."
           />
         </BentoTilt>
 
@@ -134,7 +134,7 @@ const Features = () => (
                 Visi<b>b</b>ility
               </>
             }
-            description="Operating in LEO gives us 40% Earth visibility at any moment. Compute fast, and give results even faster."
+            description="LEO satellites operate close enough to reduce latency for instant AI and edge processing."
           />
         </BentoTilt>
 
@@ -169,7 +169,7 @@ const Features = () => (
                 S<b>cal</b>ablity
               </>
             }
-            description="An API that works. Enterprise-grade infra from day one. Infinite scale."
+            description="We are API-first built on Azure Cloud, ensuring enterprise-grade reliability and scalability."
           />
         </BentoTilt>
       </div>
