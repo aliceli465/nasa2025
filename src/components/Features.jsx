@@ -101,17 +101,6 @@ export const BentoCard = ({ src, title, description, isComingSoon }) => {
 const Features = () => (
   <section className="bg-black pb-52">
     <div className="container mx-auto px-3 md:px-10">
-      <div className="px-5 py-32">
-        <p className="font-circular-web text-lg text-[#dfdff2]">
-          We're thinking out of the box, and going to orbit.
-        </p>
-        <p className="max-w-md font-circular-web text-lg text-[#dfdff2] opacity-50">
-          Our Low Earth Orbit (LEO) satellites optimize orbital exposure for
-          infinite cooling and heating, slashing energy waste while maximizing
-          compute power.
-        </p>
-      </div>
-
       <BentoTilt className="bento-tilt_1 relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
         <BentoCard
           src="videos/vid3.mp4"
