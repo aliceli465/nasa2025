@@ -34,7 +34,7 @@ const EarthSatelliteScene = ({
     priority: "medium",
     description: "",
   });
-  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isFormVisible, setIsFormVisible] = useState(true);
   const downlinkBeamsRef = useRef([]);
 
   // Toggle satellite color
@@ -919,12 +919,12 @@ const EarthSatelliteScene = ({
             <h3 className="text-[#dfdff2] text-base font-bold m-0">
               Submit Computing Task
             </h3>
-            <button
+            {/* <button
               onClick={() => setIsFormVisible(!isFormVisible)}
               className="bg-none border-none text-[#dfdff2] cursor-pointer text-lg p-1"
             >
               {isFormVisible ? "−" : "+"}
-            </button>
+            </button> */}
           </div>
 
           {isFormVisible && (
