@@ -26,12 +26,7 @@ const EarthSatelliteScene = ({
   const lastBatteryUpdateRef = useRef(Date.now());
 
   // Terminal logs state
-  const [terminalLogs, setTerminalLogs] = useState([
-    "System initialized...",
-    "Satellites deployed successfully",
-    "Battery monitoring active",
-    "Orbital tracking enabled",
-  ]);
+  const [terminalLogs, setTerminalLogs] = useState(["System initialized..."]);
 
   // Function to add logs to terminal
   const addLog = (message) => {
@@ -48,6 +43,8 @@ const EarthSatelliteScene = ({
     description: "",
   });
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [taskCounter, setTaskCounter] = useState(1);
   const downlinkBeamsRef = useRef([]);
 
   // Toggle satellite color
@@ -78,10 +75,80 @@ const EarthSatelliteScene = ({
     // Handle file upload logic here
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Handle form submission logic here
+    setIsSubmitting(true);
+
+    const currentTaskNumber = taskCounter;
+    setTaskCounter((prev) => prev + 1);
+
+    // Step 1: Show loading and log fetching
+    addLog(`Fetching for task ${currentTaskNumber}...`);
+
+    // Simulate loading delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Step 2: Pick random satellite (1-6) that is in the dark zone
+    let randomSatelliteIndex;
+    let satelliteNumber;
+    let attempts = 0;
+    const maxAttempts = 50; // Prevent infinite loop
+
+    do {
+      randomSatelliteIndex = Math.floor(Math.random() * 6);
+      satelliteNumber = randomSatelliteIndex + 1;
+      const satellite = satellitesRef.current[randomSatelliteIndex];
+
+      // Check if satellite is in dark zone (x < -5)
+      if (satellite && satellite.position.x < -5) {
+        break;
+      }
+
+      attempts++;
+    } while (attempts < maxAttempts);
+
+    // If no satellite found in dark zone after max attempts, use the last one
+    if (attempts >= maxAttempts) {
+      addLog(`No satellites in dark zone, waiting for next cycle...`);
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Step 3: Log assignment and turn satellite red
+    addLog(
+      `Assigning task ${currentTaskNumber} to satellite ${satelliteNumber}`
+    );
+
+    // Turn satellite red by adding it to red satellites (which overrides the green)
+    setBlueSatellites((prev) => new Set([...prev, randomSatelliteIndex]));
+
+    // Step 4: Wait 5-6 seconds, then turn back to green and trigger downlink
+    setTimeout(() => {
+      // Turn satellite back to green
+      setBlueSatellites((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(randomSatelliteIndex);
+        return newSet;
+      });
+
+      // Trigger downlink
+      triggerSatelliteDownlink(randomSatelliteIndex);
+
+      // Step 5: Log completion
+      addLog(`Satellite ${satelliteNumber} finished, sent to ground`);
+    }, 5500);
+
+    // Clear form
+    setFormData({
+      taskName: "",
+      clientName: "",
+      filesNecessary: "",
+      size: "",
+      priority: "medium",
+      description: "",
+    });
+
+    setIsSubmitting(false);
   };
 
   // Trigger satellite downlink animation
@@ -448,7 +515,7 @@ const EarthSatelliteScene = ({
     });
 
     let theta = 0;
-    const dTheta = (2 * Math.PI) / 3000; // Even slower orbital speed
+    const dTheta = (2 * Math.PI) / 5000; // Much slower orbital speed
     let dx = enableOrbitControls ? 0 : 0.01;
     let dy = enableOrbitControls ? 0 : -0.01;
     let dz = enableOrbitControls ? 0 : -0.05;
@@ -623,11 +690,11 @@ const EarthSatelliteScene = ({
           const isBlue = satellite.userData.isBlue || false;
 
           if (isBlue) {
-            // Blue color for toggled satellites
-            const blueColor = new THREE.Color(0x0080ff);
+            // Red color for assigned satellites
+            const redColor = new THREE.Color(0xff0000);
             materials.forEach((material) => {
-              material.emissive = blueColor;
-              material.emissiveIntensity = 1.2; // Bright blue glow
+              material.emissive = redColor;
+              material.emissiveIntensity = 1.2; // Bright red glow
             });
           } else {
             // Satellites stay green all the time
@@ -1000,9 +1067,14 @@ const EarthSatelliteScene = ({
 
                 <button
                   type="submit"
-                  className="w-full p-3 bg-[#dfdff2] text-black border-none rounded text-base font-bold cursor-pointer transition-all duration-300 hover:bg-[#c0c0d0] hover:-translate-y-0.5"
+                  disabled={isSubmitting}
+                  className={`w-full p-3 border-none rounded text-base font-bold cursor-pointer transition-all duration-300 ${
+                    isSubmitting
+                      ? "bg-gray-500 text-gray-300 cursor-not-allowed"
+                      : "bg-[#dfdff2] text-black hover:bg-[#c0c0d0] hover:-translate-y-0.5"
+                  }`}
                 >
-                  Submit Task
+                  {isSubmitting ? "Processing..." : "Submit Task"}
                 </button>
               </form>
             )}
