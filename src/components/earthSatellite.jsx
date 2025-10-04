@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
 const EarthSatelliteScene = ({
@@ -14,6 +14,23 @@ const EarthSatelliteScene = ({
   const previousMousePosition = useRef({ x: 0, y: 0 });
   const animationIdRef = useRef(null);
   const isVisibleRef = useRef(true);
+  
+  // State to track which satellites are blue
+  const [blueSatellites, setBlueSatellites] = useState(new Set());
+  const satellitesRef = useRef([]);
+
+  // Toggle satellite color
+  const toggleSatelliteColor = (satelliteIndex) => {
+    setBlueSatellites(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(satelliteIndex)) {
+        newSet.delete(satelliteIndex);
+      } else {
+        newSet.add(satelliteIndex);
+      }
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -92,22 +109,148 @@ const EarthSatelliteScene = ({
     const earthVec = new THREE.Vector3(0, 0, 0);
     let r = 30;
 
+    // Function to create realistic satellite geometry
+    const createSatelliteGeometry = () => {
+      const satelliteGroup = new THREE.Group();
+      
+      // Store materials for color changing
+      const materials = [];
+
+      // Main satellite body - cylindrical with rounded edges
+      const bodyGeometry = new THREE.CylinderGeometry(0.8, 0.8, 1.5, 16);
+      const bodyMaterial = new THREE.MeshPhongMaterial({
+        color: 0xc0c0c0,  // Silver/metallic color
+        emissive: 0x90ee90,
+        emissiveIntensity: 0.6,
+        specular: 0xffffff,
+        shininess: 150,
+      });
+      materials.push(bodyMaterial);
+      const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+      body.castShadow = true;
+      body.receiveShadow = true;
+      satelliteGroup.add(body);
+
+      // Solar panel materials with rounded corners
+      const solarPanelMaterial = new THREE.MeshPhongMaterial({
+        color: 0x000080,  // Dark blue solar panel color
+        emissive: 0x90ee90,
+        emissiveIntensity: 0.5,
+        specular: 0x4444ff,
+        shininess: 100,
+        side: THREE.DoubleSide,
+      });
+      materials.push(solarPanelMaterial);
+
+      // Left solar panel array (multiple segments for realism)
+      const panelSegments = 3;
+      for (let i = 0; i < panelSegments; i++) {
+        const panelGeometry = new THREE.BoxGeometry(0.9, 0.02, 1.4);
+        const panel = new THREE.Mesh(panelGeometry, solarPanelMaterial);
+        panel.position.set(-2.5 - (i * 0.95), 0, 0);
+        panel.castShadow = true;
+        panel.receiveShadow = true;
+        satelliteGroup.add(panel);
+      }
+
+      // Right solar panel array
+      for (let i = 0; i < panelSegments; i++) {
+        const panelGeometry = new THREE.BoxGeometry(0.9, 0.02, 1.4);
+        const panel = new THREE.Mesh(panelGeometry, solarPanelMaterial);
+        panel.position.set(2.5 + (i * 0.95), 0, 0);
+        panel.castShadow = true;
+        panel.receiveShadow = true;
+        satelliteGroup.add(panel);
+      }
+
+      // Solar panel support arms - smoother cylinders
+      const armMaterial = new THREE.MeshPhongMaterial({
+        color: 0x808080,  // Gray metal color
+        emissive: 0x90ee90,
+        emissiveIntensity: 0.5,
+        specular: 0xffffff,
+        shininess: 100,
+      });
+      materials.push(armMaterial);
+
+      // Left arm
+      const leftArmGeometry = new THREE.CylinderGeometry(0.08, 0.08, 1.8, 8);
+      const leftArm = new THREE.Mesh(leftArmGeometry, armMaterial);
+      leftArm.position.set(-1.4, 0, 0);
+      leftArm.rotation.z = Math.PI / 2;
+      satelliteGroup.add(leftArm);
+
+      // Right arm
+      const rightArmGeometry = new THREE.CylinderGeometry(0.08, 0.08, 1.8, 8);
+      const rightArm = new THREE.Mesh(rightArmGeometry, armMaterial);
+      rightArm.position.set(1.4, 0, 0);
+      rightArm.rotation.z = Math.PI / 2;
+      satelliteGroup.add(rightArm);
+
+      // Communication dish - smoother sphere segment
+      const dishGeometry = new THREE.SphereGeometry(0.4, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+      const dishMaterial = new THREE.MeshPhongMaterial({
+        color: 0xe0e0e0,  // Light gray/white dish color
+        emissive: 0x90ee90,
+        emissiveIntensity: 0.7,
+        specular: 0xffffff,
+        shininess: 200,
+        side: THREE.DoubleSide,
+      });
+      materials.push(dishMaterial);
+      const dish = new THREE.Mesh(dishGeometry, dishMaterial);
+      dish.position.set(0, 1, 0);
+      dish.rotation.x = Math.PI;
+      satelliteGroup.add(dish);
+
+      // Antenna mast
+      const antennaGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8);
+      const antennaMaterial = new THREE.MeshPhongMaterial({
+        color: 0xa0a0a0,  // Light gray metal color
+        emissive: 0x90ee90,
+        emissiveIntensity: 0.7,
+        specular: 0xffffff,
+        shininess: 150,
+      });
+      materials.push(antennaMaterial);
+      const antenna = new THREE.Mesh(antennaGeometry, antennaMaterial);
+      antenna.position.set(0, 0.5, 0);
+      satelliteGroup.add(antenna);
+
+      // Small sensor spheres for detail
+      const sensorMaterial = new THREE.MeshPhongMaterial({
+        color: 0x606060,  // Dark gray sensor color
+        emissive: 0x90ee90,
+        emissiveIntensity: 0.8,
+        specular: 0xffffff,
+        shininess: 200,
+      });
+      materials.push(sensorMaterial);
+      
+      const sensorGeometry = new THREE.SphereGeometry(0.1, 8, 6);
+      const sensor1 = new THREE.Mesh(sensorGeometry, sensorMaterial);
+      sensor1.position.set(0.5, 0.3, 0.5);
+      satelliteGroup.add(sensor1);
+      
+      const sensor2 = new THREE.Mesh(sensorGeometry, sensorMaterial);
+      sensor2.position.set(-0.5, 0.3, 0.5);
+      satelliteGroup.add(sensor2);
+
+      // Store materials reference for color changing
+      satelliteGroup.userData.materials = materials;
+
+      return satelliteGroup;
+    };
+
     // Satellites (6 equally spaced)
-    const satelliteGeometry = new THREE.BoxGeometry(3, 1, 1);
 
     // First satellite (0 degrees)
-    const satellite1Material = new THREE.MeshBasicMaterial({
-      color: 0x90ee90,
-    });
-    const satellite1 = new THREE.Mesh(satelliteGeometry, satellite1Material);
+    const satellite1 = createSatelliteGeometry();
     satellite1.position.set(r, 0, 0);
     scene.add(satellite1);
 
     // Second satellite (60 degrees)
-    const satellite2Material = new THREE.MeshBasicMaterial({
-      color: 0x90ee90,
-    });
-    const satellite2 = new THREE.Mesh(satelliteGeometry, satellite2Material);
+    const satellite2 = createSatelliteGeometry();
     satellite2.position.set(
       r * Math.cos(Math.PI / 3),
       0,
@@ -116,10 +259,7 @@ const EarthSatelliteScene = ({
     scene.add(satellite2);
 
     // Third satellite (120 degrees)
-    const satellite3Material = new THREE.MeshBasicMaterial({
-      color: 0x90ee90,
-    });
-    const satellite3 = new THREE.Mesh(satelliteGeometry, satellite3Material);
+    const satellite3 = createSatelliteGeometry();
     satellite3.position.set(
       r * Math.cos((2 * Math.PI) / 3),
       0,
@@ -128,18 +268,12 @@ const EarthSatelliteScene = ({
     scene.add(satellite3);
 
     // Fourth satellite (180 degrees)
-    const satellite4Material = new THREE.MeshBasicMaterial({
-      color: 0x90ee90,
-    });
-    const satellite4 = new THREE.Mesh(satelliteGeometry, satellite4Material);
+    const satellite4 = createSatelliteGeometry();
     satellite4.position.set(-r, 0, 0);
     scene.add(satellite4);
 
     // Fifth satellite (240 degrees)
-    const satellite5Material = new THREE.MeshBasicMaterial({
-      color: 0x90ee90,
-    });
-    const satellite5 = new THREE.Mesh(satelliteGeometry, satellite5Material);
+    const satellite5 = createSatelliteGeometry();
     satellite5.position.set(
       r * Math.cos((4 * Math.PI) / 3),
       0,
@@ -148,16 +282,17 @@ const EarthSatelliteScene = ({
     scene.add(satellite5);
 
     // Sixth satellite (300 degrees)
-    const satellite6Material = new THREE.MeshBasicMaterial({
-      color: 0x90ee90,
-    });
-    const satellite6 = new THREE.Mesh(satelliteGeometry, satellite6Material);
+    const satellite6 = createSatelliteGeometry();
     satellite6.position.set(
       r * Math.cos((5 * Math.PI) / 3),
       0,
       r * Math.sin((5 * Math.PI) / 3)
     );
     scene.add(satellite6);
+    
+    // Store satellite references
+    satellitesRef.current = [satellite1, satellite2, satellite3, satellite4, satellite5, satellite6];
+    
     let theta = 0;
     const dTheta = (2 * Math.PI) / 2000; // Slower orbital speed
     let dx = enableOrbitControls ? 0 : 0.01;
@@ -287,42 +422,59 @@ const EarthSatelliteScene = ({
       satellite6.position.x = r * Math.cos(theta + (5 * Math.PI) / 3);
       satellite6.position.z = r * Math.sin(theta + (5 * Math.PI) / 3);
 
-      // Change satellite colors based on Earth's shadow
-      if (satellite1.position.x < 0) {
-        satellite1Material.color.setHex(0xfa1937); // Red in shadow
-      } else {
-        satellite1Material.color.setHex(0x90ee90); // Green in sunlight
-      }
-
-      if (satellite2.position.x < 0) {
-        satellite2Material.color.setHex(0xfa1937); // Red in shadow
-      } else {
-        satellite2Material.color.setHex(0x90ee90); // Green in sunlight
-      }
-
-      if (satellite3.position.x < 0) {
-        satellite3Material.color.setHex(0xfa1937); // Red in shadow
-      } else {
-        satellite3Material.color.setHex(0x90ee90); // Green in sunlight
-      }
-
-      if (satellite4.position.x < 0) {
-        satellite4Material.color.setHex(0xfa1937); // Red in shadow
-      } else {
-        satellite4Material.color.setHex(0x90ee90); // Green in sunlight
-      }
-
-      if (satellite5.position.x < 0) {
-        satellite5Material.color.setHex(0xfa1937); // Red in shadow
-      } else {
-        satellite5Material.color.setHex(0x90ee90); // Green in sunlight
-      }
-
-      if (satellite6.position.x < 0) {
-        satellite6Material.color.setHex(0xfa1937); // Red in shadow
-      } else {
-        satellite6Material.color.setHex(0x90ee90); // Green in sunlight
-      }
+      // Update satellite orientations to face Earth
+      const satellites = [satellite1, satellite2, satellite3, satellite4, satellite5, satellite6];
+      satellites.forEach((satellite, index) => {
+        // Make satellites face Earth
+        satellite.lookAt(earthVec);
+        
+        // Change satellite glow based on Earth's shadow with smooth transition
+        const materials = satellite.userData.materials;
+        if (materials) {
+          // Check if this satellite should be blue
+          const isBlue = satellite.userData.isBlue || false;
+          
+          if (isBlue) {
+            // Blue color for toggled satellites
+            const blueColor = new THREE.Color(0x0080ff);
+            materials.forEach((material) => {
+              material.emissive = blueColor;
+              material.emissiveIntensity = 1.2; // Bright blue glow
+            });
+          } else {
+            // Normal red/green transition
+            // Calculate transition factor based on position
+            // Use a smooth transition zone around x = 0
+            const transitionZone = 5; // Width of transition zone
+            let transitionFactor;
+            
+            if (satellite.position.x < -transitionZone) {
+              transitionFactor = 0; // Fully in shadow (red)
+            } else if (satellite.position.x > transitionZone) {
+              transitionFactor = 1; // Fully in sunlight (green)
+            } else {
+              // Smooth transition using cosine interpolation
+              transitionFactor = (Math.sin((satellite.position.x / transitionZone) * Math.PI / 2) + 1) / 2;
+            }
+            
+            // Interpolate between red and green
+            const redColor = new THREE.Color(0xfa1937);
+            const greenColor = new THREE.Color(0x90ee90);
+            const emissiveColor = new THREE.Color();
+            emissiveColor.lerpColors(redColor, greenColor, transitionFactor);
+            
+            // Interpolate intensity
+            const shadowIntensity = 0.8;
+            const sunlightIntensity = 1.0;
+            const emissiveIntensity = shadowIntensity + (sunlightIntensity - shadowIntensity) * transitionFactor;
+            
+            materials.forEach((material) => {
+              material.emissive = emissiveColor;
+              material.emissiveIntensity = emissiveIntensity;
+            });
+          }
+        }
+      });
 
       // Camera flyby (only if orbit controls disabled)
       if (!enableOrbitControls) {
@@ -385,27 +537,91 @@ const EarthSatelliteScene = ({
       cloudMaterial.dispose();
       starGeometry.dispose();
       starMaterial.dispose();
-      satelliteGeometry.dispose();
-      satellite1Material.dispose();
-      satellite2Material.dispose();
-      satellite3Material.dispose();
-      satellite4Material.dispose();
-      satellite5Material.dispose();
-      satellite6Material.dispose();
+      
+      // Dispose of satellite geometries and materials
+      const satellites = [satellite1, satellite2, satellite3, satellite4, satellite5, satellite6];
+      satellites.forEach((satellite) => {
+        satellite.traverse((child) => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) child.material.dispose();
+        });
+      });
     };
   }, [texturesPath, enableOrbitControls]);
 
+  // Separate effect to handle color changes without rebuilding the scene
+  useEffect(() => {
+    if (satellitesRef.current.length === 0) return;
+    
+    // Update satellite colors based on blueSatellites state
+    satellitesRef.current.forEach((satellite, index) => {
+      if (satellite && satellite.userData.materials) {
+        satellite.userData.isBlue = blueSatellites.has(index);
+      }
+    });
+  }, [blueSatellites]);
+
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width,
-        height,
-        backgroundColor: "black",
-        overflow: "hidden",
-        cursor: enableOrbitControls ? "grab" : "default",
-      }}
-    />
+    <div style={{ position: "relative", width, height }}>
+      <div
+        ref={containerRef}
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: "black",
+          overflow: "hidden",
+          cursor: enableOrbitControls ? "grab" : "default",
+        }}
+      />
+      
+      {/* Satellite control buttons */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "20px",
+          right: "20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          zIndex: 10,
+        }}
+      >
+        {[0, 1, 2, 3, 4, 5].map((index) => (
+          <button
+            key={index}
+            onClick={() => toggleSatelliteColor(index)}
+            style={{
+              padding: "10px 15px",
+              backgroundColor: blueSatellites.has(index) ? "#0080ff" : "#333",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "bold",
+              transition: "all 0.3s ease",
+              boxShadow: blueSatellites.has(index) 
+                ? "0 0 10px rgba(0, 128, 255, 0.5)" 
+                : "0 2px 4px rgba(0, 0, 0, 0.2)",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "scale(1.05)";
+              e.target.style.boxShadow = blueSatellites.has(index)
+                ? "0 0 15px rgba(0, 128, 255, 0.7)"
+                : "0 4px 8px rgba(0, 0, 0, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+              e.target.style.boxShadow = blueSatellites.has(index)
+                ? "0 0 10px rgba(0, 128, 255, 0.5)"
+                : "0 2px 4px rgba(0, 0, 0, 0.2)";
+            }}
+          >
+            Satellite {index + 1}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 };
 
