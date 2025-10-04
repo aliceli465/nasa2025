@@ -5,8 +5,13 @@ import { useEffect, useRef, useState } from "react";
 import { TiLocationArrow } from "react-icons/ti";
 
 import Button from "./Button";
+import { Link } from "react-router-dom";
 
-const navItems = ["Nexus", "Vault", "Prologue", "About", "Contact"];
+const navItems = [
+  { name: "Home", path: "/" },
+  { name: "Code Demo", path: "/" },
+  { name: "Who We Are", path: "/who-we-are" },
+];
 
 const NavBar = () => {
   // State for toggling audio and visual indicator
@@ -29,7 +34,7 @@ const NavBar = () => {
 
   useEffect(() => {
     if (isAudioPlaying) {
-        audioElementRef.current.play();
+      audioElementRef.current.play();
     }
   }, []);
 
@@ -77,11 +82,15 @@ const NavBar = () => {
         <nav className="flex size-full items-center justify-between p-4">
           {/* Logo and Product button */}
           <div className="flex items-center gap-7">
-            <img src="/img/logo.png" alt="logo" className="w-10" />
+            <img
+              src="/img/sunshin.png"
+              alt="logo"
+              className="w-10 rounded-full"
+            />
 
             <Button
               id="product-button"
-              title="Products"
+              title="Project Submission"
               rightIcon={<TiLocationArrow />}
               containerClass="bg-[#dfdff2] md:flex hidden items-center justify-center gap-1"
             />
@@ -91,13 +100,9 @@ const NavBar = () => {
           <div className="flex h-full items-center">
             <div className="hidden md:block">
               {navItems.map((item, index) => (
-                <a
-                  key={index}
-                  href={`#${item.toLowerCase()}`}
-                  className="nav-hover-btn"
-                >
-                  {item}
-                </a>
+                <Link key={index} to={item.path} className="nav-hover-btn">
+                  {item.name}
+                </Link>
               ))}
             </div>
 

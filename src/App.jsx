@@ -1,21 +1,20 @@
-import Hero from './components/Hero'
-import NavBar from './components/Navbar'
-import About from './components/About'
-import Features from './components/Features'
-import Story from "./components/Story";
-import Footer from "./components/Footer";
-
-const App = () => {
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import NavBar from "./components/Navbar";
+import Home from "./components/Home";
+import WhoWeAre from "./components/WhoWeAre";
+function App() {
   return (
-    <main className="relative min-h-screen w-full">
-      <NavBar />
-      <Hero />
-      <About />
-      <Features />
-      <Story />
-      <Footer />
-    </main>
-  )
+    <Router>
+      <main className="relative min-h-screen w-full">
+        <NavBar />
+
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/who-we-are" element={<WhoWeAre />} />
+        </Routes>
+      </main>
+    </Router>
+  );
 }
 
-export default App
+export default App;
