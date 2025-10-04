@@ -39,12 +39,14 @@ const Motivations = () => {
           containerClass="mt-5 !text-black text-center"
         />
         <div className="about-subtext">
-          <p className="text-xl font-bold text-black mb-4 -mt-4">
+          <p className="text-xl font-bold text-black mb-4 mt-4">
             With computers producing massive heat and throttling GPUs, big corps
             are spending 40% of their energy just for cooling
           </p>
           <p className="text-gray-500 text-xl">
-            Google's datacenters alone use enough energy to power all of Ireland
+            Google's datacenters alone use enough energy to power the entirety
+            of Ireland. The future of compute can’t come at the cost of the
+            planet’s.
           </p>
         </div>
       </div>

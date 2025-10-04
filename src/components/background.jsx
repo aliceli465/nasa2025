@@ -51,12 +51,12 @@ const Background = () => {
       <div className="max-w-7xl mx-auto">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <p className="font-robert-regular text-lg text-[#dfdff2]/80 max-w-2xl mx-auto leading-relaxed">
+          <p className="font-circular-web text-lg text-[#dfdff2]/80 max-w-2xl mx-auto leading-relaxed">
             When a satellite is in orbit, it spends half of its time in the sun
             and the other half in Earth's shadow, where temperatures drop to
             -150°C
           </p>
-          <p className="font-robert-regular text-lg text-[#dfdff2]/80 max-w-2xl mx-auto leading-relaxed mt-8">
+          <p className="font-circular-web text-lg text-[#dfdff2]/80 max-w-2xl mx-auto leading-relaxed mt-8">
             This means we have infinite solar energy and infinite cold. Zero
             cooling infrastructure needed.
           </p>
@@ -104,7 +104,9 @@ const Background = () => {
               <h3 className="font-robert-medium text-xl text-yellow-300 mb-2">
                 45 min
               </h3>
-              <p className="text-[#dfdff2]/70">Solar Charging</p>
+              <p className="font-circular-web text-[#dfdff2]/70">
+                Solar Charging
+              </p>
             </div>
 
             {/* Shadow Phase */}
@@ -119,7 +121,9 @@ const Background = () => {
               <h3 className="font-robert-medium text-xl text-blue-300 mb-2">
                 45 min
               </h3>
-              <p className="text-[#dfdff2]/70">Peak Computing</p>
+              <p className="font-circular-web text-[#dfdff2]/70">
+                Peak Computing
+              </p>
             </div>
           </div>
 
@@ -127,7 +131,7 @@ const Background = () => {
         </div>
         <br></br>
         <div className="text-center mt-20 mb-10">
-          <h2 className="font-robert-regular text-5xl text-[#dfdff2]/80 max-w-2xl mx-auto leading-relaxed">
+          <h2 className="font-circular-web text-5xl text-[#dfdff2]/80 max-w-2xl mx-auto leading-relaxed">
             Enter, LeData.
           </h2>
         </div>
