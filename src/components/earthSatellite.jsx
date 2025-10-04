@@ -14,14 +14,25 @@ const EarthSatelliteScene = ({
   const previousMousePosition = useRef({ x: 0, y: 0 });
   const animationIdRef = useRef(null);
   const isVisibleRef = useRef(true);
-  
+
   // State to track which satellites are blue
   const [blueSatellites, setBlueSatellites] = useState(new Set());
   const satellitesRef = useRef([]);
 
+  // Form state
+  const [formData, setFormData] = useState({
+    taskName: "",
+    clientName: "",
+    filesNecessary: "",
+    size: "",
+    priority: "medium",
+    description: "",
+  });
+  const [isFormVisible, setIsFormVisible] = useState(false);
+
   // Toggle satellite color
   const toggleSatelliteColor = (satelliteIndex) => {
-    setBlueSatellites(prev => {
+    setBlueSatellites((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(satelliteIndex)) {
         newSet.delete(satelliteIndex);
@@ -30,6 +41,27 @@ const EarthSatelliteScene = ({
       }
       return newSet;
     });
+  };
+
+  // Form handlers
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleFileUpload = (e) => {
+    const files = Array.from(e.target.files);
+    console.log("Files uploaded:", files);
+    // Handle file upload logic here
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Form submitted:", formData);
+    // Handle form submission logic here
   };
 
   useEffect(() => {
@@ -112,14 +144,14 @@ const EarthSatelliteScene = ({
     // Function to create realistic satellite geometry
     const createSatelliteGeometry = () => {
       const satelliteGroup = new THREE.Group();
-      
+
       // Store materials for color changing
       const materials = [];
 
       // Main satellite body - cylindrical with rounded edges
       const bodyGeometry = new THREE.CylinderGeometry(0.8, 0.8, 1.5, 16);
       const bodyMaterial = new THREE.MeshPhongMaterial({
-        color: 0xc0c0c0,  // Silver/metallic color
+        color: 0xc0c0c0, // Silver/metallic color
         emissive: 0x90ee90,
         emissiveIntensity: 0.6,
         specular: 0xffffff,
@@ -133,7 +165,7 @@ const EarthSatelliteScene = ({
 
       // Solar panel materials with rounded corners
       const solarPanelMaterial = new THREE.MeshPhongMaterial({
-        color: 0x000080,  // Dark blue solar panel color
+        color: 0x000080, // Dark blue solar panel color
         emissive: 0x90ee90,
         emissiveIntensity: 0.5,
         specular: 0x4444ff,
@@ -147,7 +179,7 @@ const EarthSatelliteScene = ({
       for (let i = 0; i < panelSegments; i++) {
         const panelGeometry = new THREE.BoxGeometry(0.9, 0.02, 1.4);
         const panel = new THREE.Mesh(panelGeometry, solarPanelMaterial);
-        panel.position.set(-2.5 - (i * 0.95), 0, 0);
+        panel.position.set(-2.5 - i * 0.95, 0, 0);
         panel.castShadow = true;
         panel.receiveShadow = true;
         satelliteGroup.add(panel);
@@ -157,7 +189,7 @@ const EarthSatelliteScene = ({
       for (let i = 0; i < panelSegments; i++) {
         const panelGeometry = new THREE.BoxGeometry(0.9, 0.02, 1.4);
         const panel = new THREE.Mesh(panelGeometry, solarPanelMaterial);
-        panel.position.set(2.5 + (i * 0.95), 0, 0);
+        panel.position.set(2.5 + i * 0.95, 0, 0);
         panel.castShadow = true;
         panel.receiveShadow = true;
         satelliteGroup.add(panel);
@@ -165,7 +197,7 @@ const EarthSatelliteScene = ({
 
       // Solar panel support arms - smoother cylinders
       const armMaterial = new THREE.MeshPhongMaterial({
-        color: 0x808080,  // Gray metal color
+        color: 0x808080, // Gray metal color
         emissive: 0x90ee90,
         emissiveIntensity: 0.5,
         specular: 0xffffff,
@@ -188,9 +220,17 @@ const EarthSatelliteScene = ({
       satelliteGroup.add(rightArm);
 
       // Communication dish - smoother sphere segment
-      const dishGeometry = new THREE.SphereGeometry(0.4, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+      const dishGeometry = new THREE.SphereGeometry(
+        0.4,
+        16,
+        8,
+        0,
+        Math.PI * 2,
+        0,
+        Math.PI / 2
+      );
       const dishMaterial = new THREE.MeshPhongMaterial({
-        color: 0xe0e0e0,  // Light gray/white dish color
+        color: 0xe0e0e0, // Light gray/white dish color
         emissive: 0x90ee90,
         emissiveIntensity: 0.7,
         specular: 0xffffff,
@@ -206,7 +246,7 @@ const EarthSatelliteScene = ({
       // Antenna mast
       const antennaGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8);
       const antennaMaterial = new THREE.MeshPhongMaterial({
-        color: 0xa0a0a0,  // Light gray metal color
+        color: 0xa0a0a0, // Light gray metal color
         emissive: 0x90ee90,
         emissiveIntensity: 0.7,
         specular: 0xffffff,
@@ -219,19 +259,19 @@ const EarthSatelliteScene = ({
 
       // Small sensor spheres for detail
       const sensorMaterial = new THREE.MeshPhongMaterial({
-        color: 0x606060,  // Dark gray sensor color
+        color: 0x606060, // Dark gray sensor color
         emissive: 0x90ee90,
         emissiveIntensity: 0.8,
         specular: 0xffffff,
         shininess: 200,
       });
       materials.push(sensorMaterial);
-      
+
       const sensorGeometry = new THREE.SphereGeometry(0.1, 8, 6);
       const sensor1 = new THREE.Mesh(sensorGeometry, sensorMaterial);
       sensor1.position.set(0.5, 0.3, 0.5);
       satelliteGroup.add(sensor1);
-      
+
       const sensor2 = new THREE.Mesh(sensorGeometry, sensorMaterial);
       sensor2.position.set(-0.5, 0.3, 0.5);
       satelliteGroup.add(sensor2);
@@ -289,10 +329,17 @@ const EarthSatelliteScene = ({
       r * Math.sin((5 * Math.PI) / 3)
     );
     scene.add(satellite6);
-    
+
     // Store satellite references
-    satellitesRef.current = [satellite1, satellite2, satellite3, satellite4, satellite5, satellite6];
-    
+    satellitesRef.current = [
+      satellite1,
+      satellite2,
+      satellite3,
+      satellite4,
+      satellite5,
+      satellite6,
+    ];
+
     let theta = 0;
     const dTheta = (2 * Math.PI) / 2000; // Slower orbital speed
     let dx = enableOrbitControls ? 0 : 0.01;
@@ -423,17 +470,24 @@ const EarthSatelliteScene = ({
       satellite6.position.z = r * Math.sin(theta + (5 * Math.PI) / 3);
 
       // Update satellite orientations to face Earth
-      const satellites = [satellite1, satellite2, satellite3, satellite4, satellite5, satellite6];
+      const satellites = [
+        satellite1,
+        satellite2,
+        satellite3,
+        satellite4,
+        satellite5,
+        satellite6,
+      ];
       satellites.forEach((satellite, index) => {
         // Make satellites face Earth
         satellite.lookAt(earthVec);
-        
+
         // Change satellite glow based on Earth's shadow with smooth transition
         const materials = satellite.userData.materials;
         if (materials) {
           // Check if this satellite should be blue
           const isBlue = satellite.userData.isBlue || false;
-          
+
           if (isBlue) {
             // Blue color for toggled satellites
             const blueColor = new THREE.Color(0x0080ff);
@@ -447,27 +501,34 @@ const EarthSatelliteScene = ({
             // Use a smooth transition zone around x = 0
             const transitionZone = 5; // Width of transition zone
             let transitionFactor;
-            
+
             if (satellite.position.x < -transitionZone) {
               transitionFactor = 0; // Fully in shadow (red)
             } else if (satellite.position.x > transitionZone) {
               transitionFactor = 1; // Fully in sunlight (green)
             } else {
               // Smooth transition using cosine interpolation
-              transitionFactor = (Math.sin((satellite.position.x / transitionZone) * Math.PI / 2) + 1) / 2;
+              transitionFactor =
+                (Math.sin(
+                  ((satellite.position.x / transitionZone) * Math.PI) / 2
+                ) +
+                  1) /
+                2;
             }
-            
+
             // Interpolate between red and green
             const redColor = new THREE.Color(0xfa1937);
             const greenColor = new THREE.Color(0x90ee90);
             const emissiveColor = new THREE.Color();
             emissiveColor.lerpColors(redColor, greenColor, transitionFactor);
-            
+
             // Interpolate intensity
             const shadowIntensity = 0.8;
             const sunlightIntensity = 1.0;
-            const emissiveIntensity = shadowIntensity + (sunlightIntensity - shadowIntensity) * transitionFactor;
-            
+            const emissiveIntensity =
+              shadowIntensity +
+              (sunlightIntensity - shadowIntensity) * transitionFactor;
+
             materials.forEach((material) => {
               material.emissive = emissiveColor;
               material.emissiveIntensity = emissiveIntensity;
@@ -537,9 +598,16 @@ const EarthSatelliteScene = ({
       cloudMaterial.dispose();
       starGeometry.dispose();
       starMaterial.dispose();
-      
+
       // Dispose of satellite geometries and materials
-      const satellites = [satellite1, satellite2, satellite3, satellite4, satellite5, satellite6];
+      const satellites = [
+        satellite1,
+        satellite2,
+        satellite3,
+        satellite4,
+        satellite5,
+        satellite6,
+      ];
       satellites.forEach((satellite) => {
         satellite.traverse((child) => {
           if (child.geometry) child.geometry.dispose();
@@ -552,7 +620,7 @@ const EarthSatelliteScene = ({
   // Separate effect to handle color changes without rebuilding the scene
   useEffect(() => {
     if (satellitesRef.current.length === 0) return;
-    
+
     // Update satellite colors based on blueSatellites state
     satellitesRef.current.forEach((satellite, index) => {
       if (satellite && satellite.userData.materials) {
@@ -562,64 +630,170 @@ const EarthSatelliteScene = ({
   }, [blueSatellites]);
 
   return (
-    <div style={{ position: "relative", width, height }}>
+    <div style={{ position: "relative", width, height, display: "flex" }}>
+      {/* Three.js Scene - 3/4 width */}
       <div
         ref={containerRef}
         style={{
-          width: "100%",
+          width: "75%",
           height: "100%",
           backgroundColor: "black",
           overflow: "hidden",
           cursor: enableOrbitControls ? "grab" : "default",
         }}
       />
-      
-      {/* Satellite control buttons */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "20px",
-          right: "20px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          zIndex: 10,
-        }}
-      >
-        {[0, 1, 2, 3, 4, 5].map((index) => (
-          <button
-            key={index}
-            onClick={() => toggleSatelliteColor(index)}
-            style={{
-              padding: "10px 15px",
-              backgroundColor: blueSatellites.has(index) ? "#0080ff" : "#333",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "bold",
-              transition: "all 0.3s ease",
-              boxShadow: blueSatellites.has(index) 
-                ? "0 0 10px rgba(0, 128, 255, 0.5)" 
-                : "0 2px 4px rgba(0, 0, 0, 0.2)",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = blueSatellites.has(index)
-                ? "0 0 15px rgba(0, 128, 255, 0.7)"
-                : "0 4px 8px rgba(0, 0, 0, 0.3)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = blueSatellites.has(index)
-                ? "0 0 10px rgba(0, 128, 255, 0.5)"
-                : "0 2px 4px rgba(0, 0, 0, 0.2)";
-            }}
-          >
-            Satellite {index + 1}
-          </button>
-        ))}
+
+      {/* Form Panel - 1/4 width */}
+      <div className="w-1/4 h-full bg-black/90 backdrop-blur-md border-l border-white/10 p-5 overflow-y-auto">
+        <div className=" mt-16 mb-8">
+          <div className="flex flex-col gap-2">
+            {[0, 1, 2, 3, 4, 5].map((index) => (
+              <button
+                key={index}
+                onClick={() => toggleSatelliteColor(index)}
+                className={`px-3 py-2 text-white border-none rounded cursor-pointer text-xs font-bold transition-all duration-300 hover:scale-105 ${
+                  blueSatellites.has(index)
+                    ? "bg-blue-500 shadow-[0_0_10px_rgba(0,128,255,0.5)] hover:shadow-[0_0_15px_rgba(0,128,255,0.7)]"
+                    : "bg-gray-700 shadow-[0_2px_4px_rgba(0,0,0,0.2)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.3)]"
+                }`}
+              >
+                Satellite {index + 1}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Client Form */}
+        <div>
+          <div className="flex justify-between items-center mb-5">
+            <h3 className="text-[#dfdff2] text-base font-bold m-0">
+              Submit Computing Task
+            </h3>
+            <button
+              onClick={() => setIsFormVisible(!isFormVisible)}
+              className="bg-none border-none text-[#dfdff2] cursor-pointer text-lg p-1"
+            >
+              {isFormVisible ? "−" : "+"}
+            </button>
+          </div>
+
+          {isFormVisible && (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Task Name
+                </label>
+                <input
+                  type="text"
+                  name="taskName"
+                  value={formData.taskName}
+                  onChange={handleInputChange}
+                  placeholder="e.g., AI Model Training"
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Client Name
+                </label>
+                <input
+                  type="text"
+                  name="clientName"
+                  value={formData.clientName}
+                  onChange={handleInputChange}
+                  placeholder="Your company name"
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Files Necessary
+                </label>
+                <input
+                  type="text"
+                  name="filesNecessary"
+                  value={formData.filesNecessary}
+                  onChange={handleInputChange}
+                  placeholder="e.g., dataset.csv, model.py"
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Data Size
+                </label>
+                <select
+                  name="size"
+                  value={formData.size}
+                  onChange={handleInputChange}
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                  required
+                >
+                  <option value="">Select size</option>
+                  <option value="small">Small (&lt; 1GB)</option>
+                  <option value="medium">Medium (1-10GB)</option>
+                  <option value="large">Large (10-100GB)</option>
+                  <option value="xlarge">Extra Large (&gt; 100GB)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Priority
+                </label>
+                <select
+                  name="priority"
+                  value={formData.priority}
+                  onChange={handleInputChange}
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Describe your computing task..."
+                  rows="3"
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm resize-y"
+                />
+              </div>
+
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Upload Files
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileUpload}
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full p-3 bg-[#dfdff2] text-black border-none rounded text-base font-bold cursor-pointer transition-all duration-300 hover:bg-[#c0c0d0] hover:-translate-y-0.5"
+              >
+                Submit Task
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

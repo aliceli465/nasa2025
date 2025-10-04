@@ -131,7 +131,7 @@ const Features = () => (
             src="videos/vid4.mp4"
             title={
               <>
-                Visi<b>b</b>ility
+                Acc<b>ess</b>ibility
               </>
             }
             description="LEO satellites operate close enough to reduce latency for instant AI and edge processing."

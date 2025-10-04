@@ -57,7 +57,7 @@ const Background = () => {
             -150°C
           </p>
           <p className="font-circular-web text-lg text-[#dfdff2]/80 max-w-2xl mx-auto leading-relaxed mt-8">
-            This means we have infinite solar energy and infinite cold. Zero
+            This means we have infinite solar energy and infinite cooling. Zero
             cooling infrastructure needed.
           </p>
         </div>
