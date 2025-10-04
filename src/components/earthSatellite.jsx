@@ -17,7 +17,11 @@ const EarthSatelliteScene = ({
   
   // State to track which satellites are blue
   const [blueSatellites, setBlueSatellites] = useState(new Set());
+  // State to track downlink animations (stores animation end times)
+  const [downlinkAnimations, setDownlinkAnimations] = useState(new Map());
+  const downlinkAnimationsRef = useRef(new Map());
   const satellitesRef = useRef([]);
+  const downlinkBeamsRef = useRef([]);
 
   // Toggle satellite color
   const toggleSatelliteColor = (satelliteIndex) => {
@@ -29,6 +33,20 @@ const EarthSatelliteScene = ({
         newSet.add(satelliteIndex);
       }
       return newSet;
+    });
+  };
+
+  // Trigger satellite downlink animation
+  const triggerSatelliteDownlink = (satelliteIndex) => {
+    const animationDuration = 1000; // 1 second
+    const endTime = Date.now() + animationDuration;
+    
+    // Update both state and ref
+    downlinkAnimationsRef.current.set(satelliteIndex, endTime);
+    setDownlinkAnimations(prev => {
+      const newMap = new Map(prev);
+      newMap.set(satelliteIndex, endTime);
+      return newMap;
     });
   };
 
@@ -292,6 +310,34 @@ const EarthSatelliteScene = ({
     
     // Store satellite references
     satellitesRef.current = [satellite1, satellite2, satellite3, satellite4, satellite5, satellite6];
+
+    // Create downlink beams
+    const createDownlinkBeam = () => {
+      const beamGroup = new THREE.Group();
+      
+      // Main beam line - using BoxGeometry for better control
+      const beamGeometry = new THREE.BoxGeometry(0.1, 0.1, 1);
+      const beamMaterial = new THREE.MeshPhongMaterial({
+        color: 0x00ffff,
+        emissive: 0x00ffff,
+        emissiveIntensity: 0.8,
+        transparent: true,
+        opacity: 0.7,
+      });
+      
+      const beam = new THREE.Mesh(beamGeometry, beamMaterial);
+      beamGroup.add(beam);
+      
+      return beamGroup;
+    };
+
+    // Initialize downlink beams array
+    downlinkBeamsRef.current = satellitesRef.current.map(() => {
+      const beam = createDownlinkBeam();
+      beam.visible = false;
+      scene.add(beam);
+      return beam;
+    });
     
     let theta = 0;
     const dTheta = (2 * Math.PI) / 2000; // Slower orbital speed
@@ -476,6 +522,62 @@ const EarthSatelliteScene = ({
         }
       });
 
+      // Update downlink beams
+      const currentTime = Date.now();
+      downlinkBeamsRef.current.forEach((beam, index) => {
+        const satellite = satellitesRef.current[index];
+        
+        // Check if this satellite has an active animation
+        let isAnimating = false;
+        let animationEndTime = null;
+        
+        // Access the latest animations through ref
+        const endTime = downlinkAnimationsRef.current.get(index);
+        if (endTime && currentTime < endTime) {
+          isAnimating = true;
+          animationEndTime = endTime;
+        }
+        
+        if (isAnimating && satellite) {
+          beam.visible = true;
+          
+          // Calculate direction and distance from satellite to Earth center
+          const satellitePos = satellite.position.clone();
+          const direction = earthVec.clone().sub(satellitePos);
+          const distance = direction.length();
+          
+          // Position beam group at satellite location
+          beam.position.copy(satellitePos);
+          
+          // Point beam toward Earth
+          beam.lookAt(earthVec);
+          
+          // Calculate animation progress (0 to 1)
+          const animationDuration = 1000; // 1 second
+          const timeLeft = animationEndTime - currentTime;
+          const progress = 1 - (timeLeft / animationDuration);
+          
+          // Animate beam appearance with fade in/out
+          let opacity = 0.7;
+          if (progress < 0.2) {
+            // Fade in
+            opacity = (progress / 0.2) * 0.7;
+          } else if (progress > 0.8) {
+            // Fade out
+            opacity = ((1 - progress) / 0.2) * 0.7;
+          }
+          
+          // Scale and position the main beam box to extend toward Earth
+          const mainBeam = beam.children[0];
+          mainBeam.scale.set(1, 1, distance * 0.8); // Scale Z to reach toward Earth
+          mainBeam.position.set(0, 0, distance * 0.4); // Move beam toward Earth (positive Z)
+          mainBeam.material.opacity = opacity;
+          
+        } else {
+          beam.visible = false;
+        }
+      });
+
       // Camera flyby (only if orbit controls disabled)
       if (!enableOrbitControls) {
         if (camera.position.z < 0) {
@@ -561,6 +663,36 @@ const EarthSatelliteScene = ({
     });
   }, [blueSatellites]);
 
+  // Clean up expired animations
+  useEffect(() => {
+    const cleanup = () => {
+      const currentTime = Date.now();
+      
+      // Clean up ref
+      const newRefMap = new Map();
+      for (const [key, endTime] of downlinkAnimationsRef.current) {
+        if (currentTime < endTime) {
+          newRefMap.set(key, endTime);
+        }
+      }
+      downlinkAnimationsRef.current = newRefMap;
+      
+      // Clean up state
+      setDownlinkAnimations(prev => {
+        const newMap = new Map();
+        for (const [key, endTime] of prev) {
+          if (currentTime < endTime) {
+            newMap.set(key, endTime);
+          }
+        }
+        return newMap;
+      });
+    };
+    
+    const interval = setInterval(cleanup, 1000); // Clean up every second
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div style={{ position: "relative", width, height }}>
       <div
@@ -587,38 +719,74 @@ const EarthSatelliteScene = ({
         }}
       >
         {[0, 1, 2, 3, 4, 5].map((index) => (
-          <button
+          <div
             key={index}
-            onClick={() => toggleSatelliteColor(index)}
             style={{
-              padding: "10px 15px",
-              backgroundColor: blueSatellites.has(index) ? "#0080ff" : "#333",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "bold",
-              transition: "all 0.3s ease",
-              boxShadow: blueSatellites.has(index) 
-                ? "0 0 10px rgba(0, 128, 255, 0.5)" 
-                : "0 2px 4px rgba(0, 0, 0, 0.2)",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = blueSatellites.has(index)
-                ? "0 0 15px rgba(0, 128, 255, 0.7)"
-                : "0 4px 8px rgba(0, 0, 0, 0.3)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = blueSatellites.has(index)
-                ? "0 0 10px rgba(0, 128, 255, 0.5)"
-                : "0 2px 4px rgba(0, 0, 0, 0.2)";
+              display: "flex",
+              gap: "8px",
+              alignItems: "center",
             }}
           >
-            Satellite {index + 1}
-          </button>
+            <button
+              onClick={() => toggleSatelliteColor(index)}
+              style={{
+                padding: "8px 12px",
+                backgroundColor: blueSatellites.has(index) ? "#0080ff" : "#333",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: "bold",
+                transition: "all 0.3s ease",
+                boxShadow: blueSatellites.has(index) 
+                  ? "0 0 10px rgba(0, 128, 255, 0.5)" 
+                  : "0 2px 4px rgba(0, 0, 0, 0.2)",
+                minWidth: "80px",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "scale(1.05)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "scale(1)";
+              }}
+            >
+              Sat {index + 1}
+            </button>
+            
+            <button
+              onClick={() => triggerSatelliteDownlink(index)}
+              style={{
+                padding: "8px 12px",
+                backgroundColor: downlinkAnimations.has(index) && Date.now() < downlinkAnimations.get(index) ? "#00ffff" : "#333",
+                color: downlinkAnimations.has(index) && Date.now() < downlinkAnimations.get(index) ? "#000" : "#fff",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: "bold",
+                transition: "all 0.3s ease",
+                boxShadow: downlinkAnimations.has(index) && Date.now() < downlinkAnimations.get(index)
+                  ? "0 0 10px rgba(0, 255, 255, 0.5)"
+                  : "0 2px 4px rgba(0, 0, 0, 0.2)",
+                minWidth: "80px",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "scale(1.05)";
+                e.target.style.boxShadow = downlinkAnimations.has(index) && Date.now() < downlinkAnimations.get(index)
+                  ? "0 0 15px rgba(0, 255, 255, 0.7)"
+                  : "0 4px 8px rgba(0, 0, 0, 0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "scale(1)";
+                e.target.style.boxShadow = downlinkAnimations.has(index) && Date.now() < downlinkAnimations.get(index)
+                  ? "0 0 10px rgba(0, 255, 255, 0.5)"
+                  : "0 2px 4px rgba(0, 0, 0, 0.2)";
+              }}
+            >
+              📡 SEND
+            </button>
+          </div>
         ))}
       </div>
     </div>
