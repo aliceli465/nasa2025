@@ -47,7 +47,7 @@ const EarthSatelliteScene = ({
     priority: "medium",
     description: "",
   });
-  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isFormVisible, setIsFormVisible] = useState(true);
   const downlinkBeamsRef = useRef([]);
 
   // Toggle satellite color
@@ -1055,6 +1055,169 @@ const EarthSatelliteScene = ({
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Form Panel - 1/4 width */}
+      <div className="w-1/4 h-full bg-black/90 backdrop-blur-md border-l border-white/10 p-5 overflow-y-auto">
+        {/* <div className="mt-16 mb-8">
+          <h3 className="text-[#dfdff2] text-base font-bold mb-4">
+            Satellite Controls
+          </h3>
+          <div className="flex flex-col gap-2">
+            {[0, 1, 2, 3, 4, 5].map((index) => (
+              <div key={index} className="flex gap-2">
+                <button
+                  onClick={() => toggleSatelliteColor(index)}
+                  className={`px-3 py-2 text-white border-none rounded cursor-pointer text-xs font-bold transition-all duration-300 hover:scale-105 flex-1 ${
+                    blueSatellites.has(index)
+                      ? "bg-blue-500 shadow-[0_0_10px_rgba(0,128,255,0.5)] hover:shadow-[0_0_15px_rgba(0,128,255,0.7)]"
+                      : "bg-gray-700 shadow-[0_2px_4px_rgba(0,0,0,0.2)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.3)]"
+                  }`}
+                >
+                  Satellite {index + 1}
+                </button>
+                <button
+                  onClick={() => triggerSatelliteDownlink(index)}
+                  className="px-3 py-2 bg-cyan-500 text-white border-none rounded cursor-pointer text-xs font-bold transition-all duration-300 hover:scale-105 hover:bg-cyan-400 shadow-[0_2px_4px_rgba(0,255,255,0.2)] hover:shadow-[0_4px_8px_rgba(0,255,255,0.4)]"
+                >
+                  Downlink
+                </button>
+              </div>
+            ))}
+          </div>
+        </div> */}
+
+        {/* Client Form */}
+        <div>
+          <div className="mt-16 flex justify-between items-center mb-5">
+            <h3 className="text-[#dfdff2] text-base font-bold m-0">
+              Submit Computing Task
+            </h3>
+            {/* <button
+              onClick={() => setIsFormVisible(!isFormVisible)}
+              className="bg-none border-none text-[#dfdff2] cursor-pointer text-lg p-1"
+            >
+              {isFormVisible ? "−" : "+"}
+            </button> */}
+          </div>
+
+          {isFormVisible && (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Task Name
+                </label>
+                <input
+                  type="text"
+                  name="taskName"
+                  value={formData.taskName}
+                  onChange={handleInputChange}
+                  placeholder="e.g., AI Model Training"
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Client Name
+                </label>
+                <input
+                  type="text"
+                  name="clientName"
+                  value={formData.clientName}
+                  onChange={handleInputChange}
+                  placeholder="Your company name"
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Files Necessary
+                </label>
+                <input
+                  type="text"
+                  name="filesNecessary"
+                  value={formData.filesNecessary}
+                  onChange={handleInputChange}
+                  placeholder="e.g., dataset.csv, model.py"
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Data Size
+                </label>
+                <select
+                  name="size"
+                  value={formData.size}
+                  onChange={handleInputChange}
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                  required
+                >
+                  <option value="">Select size</option>
+                  <option value="small">Small (&lt; 1GB)</option>
+                  <option value="medium">Medium (1-10GB)</option>
+                  <option value="large">Large (10-100GB)</option>
+                  <option value="xlarge">Extra Large (&gt; 100GB)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Priority
+                </label>
+                <select
+                  name="priority"
+                  value={formData.priority}
+                  onChange={handleInputChange}
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Describe your computing task..."
+                  rows="3"
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm resize-y"
+                />
+              </div>
+
+              <div>
+                <label className="text-[#dfdff2] text-sm mb-1 block">
+                  Upload Files
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileUpload}
+                  className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full p-3 bg-[#dfdff2] text-black border-none rounded text-base font-bold cursor-pointer transition-all duration-300 hover:bg-[#c0c0d0] hover:-translate-y-0.5"
+              >
+                Submit Task
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>
