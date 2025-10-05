@@ -45,7 +45,7 @@ const Motivations = () => {
           </p>
           <p className="text-gray-500 text-xl">
             Google's datacenters alone use enough energy to power the entirety
-            of Ireland. The future of compute can’t come at the cost of the
+            of Ireland. The future of computing can’t come at the cost of the
             planet’s.
           </p>
         </div>

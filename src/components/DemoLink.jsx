@@ -1,5 +1,6 @@
 import gsap from "gsap";
 import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 import Button from "./Button";
 import AnimatedTitle from "./AnimatedTitle";
@@ -7,6 +8,7 @@ import { TiLocationArrow } from "react-icons/ti";
 
 const DemoLink = () => {
   const frameRef = useRef(null);
+  const navigate = useNavigate();
 
   const handleMouseMove = (e) => {
     const { clientX, clientY } = e;
@@ -46,6 +48,14 @@ const DemoLink = () => {
     }
   };
 
+  const handleDemoClick = () => {
+    navigate("/demo");
+  };
+
+  const handleContactClick = () => {
+    navigate("/who-we-are");
+  };
+
   return (
     <div
       id="story"
@@ -58,7 +68,7 @@ const DemoLink = () => {
         />
         <br />
         <p className="mt-3 text-xl font-circular-web text-[#dfdff2]">
-          Tech giants need massive compute. We're here. The space economy is
+          Tech giants need massive computing. We're here. The space economy is
           here. Your next breakthrough is in orbit.
         </p>
         <br />
@@ -67,6 +77,7 @@ const DemoLink = () => {
           title="Code demo"
           rightIcon={<TiLocationArrow />}
           containerClass="bg-[#dfdff2] md:flex hidden items-center justify-center gap-1"
+          onClick={handleDemoClick}
         />
       </div>
     </div>

@@ -66,7 +66,6 @@ const NavBar = () => {
     setLastScrollY(currentScrollY);
   }, [currentScrollY, lastScrollY]);
 
-
   useEffect(() => {
     let timeout;
     if (!hovered) {
@@ -100,7 +99,7 @@ const NavBar = () => {
         className="fixed inset-x-0 top-4 z-50 h-16 border-none transition-all duration-700 sm:inset-x-6"
       >
         <header className="absolute top-1/2 w-full -translate-y-1/2">
-          <nav 
+          <nav
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             className="flex size-full items-center justify-between p-4"
@@ -112,13 +111,18 @@ const NavBar = () => {
                 alt="logo"
                 className="w-10 rounded-full"
               />
-
-              <Button
-                id="product-button"
-                title="Project Submission"
-                rightIcon={<TiLocationArrow />}
-                containerClass="bg-[#dfdff2] md:flex hidden items-center justify-center gap-1"
-              />
+              <a
+                href="https://www.spaceappschallenge.org/2025/find-a-team/naasa2/?tab=project"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  id="product-button"
+                  title="Project Submission"
+                  rightIcon={<TiLocationArrow />}
+                  containerClass="bg-[#dfdff2] md:flex hidden items-center justify-center gap-1"
+                />
+              </a>
             </div>
 
             {/* Navigation Links and Audio Button */}

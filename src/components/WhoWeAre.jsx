@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/all";
@@ -106,6 +107,11 @@ const DataSourceItem = ({ title, type, description, authors, year, link }) => {
 };
 
 const WhoWeAre = () => {
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, []);
+
   useGSAP(() => {
     // Animate team section
     gsap.fromTo(

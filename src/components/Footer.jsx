@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import AnimatedTitle from "./AnimatedTitle";
 import Button from "./Button";
 
@@ -8,6 +9,11 @@ const ImageClipBox = ({ src, clipClass }) => (
 );
 
 const Footer = () => {
+  const navigate = useNavigate();
+
+  const handleContactClick = () => {
+    navigate("/who-we-are");
+  };
   return (
     <div className="my-10 min-h-96 w-full overflow-hidden px-10">
       <div className="relative rounded-lg bg-black py-24 text-[#dfdff2] sm:overflow-hidden">
@@ -36,7 +42,11 @@ const Footer = () => {
             className="special-font !md:text-[6.2rem] w-full font-zentry !text-5xl !font-black !leading-[.9]"
           />
 
-          <Button title="contact us" containerClass="mt-10 cursor-pointer" />
+          <Button
+            title="contact us"
+            containerClass="mt-10 cursor-pointer"
+            onClick={handleContactClick}
+          />
         </div>
       </div>
     </div>
