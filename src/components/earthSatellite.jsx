@@ -663,11 +663,20 @@ const EarthSatelliteScene = ({
           const newBatteries = { ...prevBatteries };
 
           satellites.forEach((satellite, index) => {
-            const currentBattery = newBatteries[index] || 100;
+            const currentBattery = Math.max(newBatteries[index] || 0, 0);
 
             if (satellite.position.x < -5) {
               // In shadow - discharge by 1%
-              newBatteries[index] = Math.max(0, currentBattery - 1);
+              const greenColor = new THREE.Color(0x90ee90);
+              const materials = satellite.userData.materials;
+              let rate = 1;
+              materials.forEach((material) => {
+                if(material.emissive.equals(greenColor))
+                  rate = 0.5;
+                  return;
+              })
+
+              newBatteries[index] = Math.max(0, currentBattery - rate);
             } else if (satellite.position.x > 5 && currentBattery < 100) {
               // In sunlight and not full - charge by 1%
               newBatteries[index] = Math.min(100, currentBattery + 1);
@@ -1088,7 +1097,7 @@ const EarthSatelliteScene = ({
         <div className="space-y-2">
           {satellitesRef.current.map((satellite, index) => {
             // Get actual battery level from state
-            const batteryLevel = satelliteBatteries[index] || 100;
+            const batteryLevel = satelliteBatteries[index] || 0;
             let batteryColor = "bg-gray-500";
 
             // Determine color based on battery level only
