@@ -69,15 +69,29 @@ const CreditItem = ({ title, description, link, icon }) => {
 };
 
 const DataSourceItem = ({ title, type, description, authors, year, link }) => {
+  const isOurDocumentation = type === "Our Documentation";
+
   return (
-    <div className="group relative overflow-hidden rounded-lg border-hsla bg-black/10 backdrop-blur-sm p-5 transition-all duration-300 hover:bg-black/20">
+    <div
+      className={`group relative overflow-hidden rounded-lg border-hsla backdrop-blur-sm p-5 transition-all duration-300 ${
+        isOurDocumentation
+          ? "bg-gradient-to-r from-violet-500/20 to-blue-500/20 border-violet-300/30 hover:from-violet-500/30 hover:to-blue-500/30"
+          : "bg-black/10 hover:bg-black/20"
+      }`}
+    >
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <h4 className="special-font text-base font-zentry font-thin text-[#dfdff2] uppercase">
             {title}
           </h4>
           <div className="mt-1 flex items-center gap-2">
-            <span className="rounded-full bg-violet-300/20 px-2 py-1 font-circular-web text-xs text-[#dfdff2]/80 uppercase tracking-wider">
+            <span
+              className={`rounded-full px-2 py-1 font-circular-web text-xs uppercase tracking-wider ${
+                isOurDocumentation
+                  ? "bg-gradient-to-r from-violet-400/30 to-blue-400/30 text-violet-200 font-semibold"
+                  : "bg-violet-300/20 text-[#dfdff2]/80"
+              }`}
+            >
               {type}
             </span>
             <span className="font-circular-web text-xs text-[#dfdff2]/60">
@@ -271,53 +285,7 @@ const WhoWeAre = () => {
     },
   ];
 
-  const dataSources = [
-    {
-      title: "GOCE Satellite Data",
-      type: "Dataset",
-      description:
-        "Earth gravitational field measurements for orbital mechanics modeling and satellite positioning algorithms.",
-      authors: "European Space Agency (ESA)",
-      year: "2009-2013",
-      link: "https://www.esa.int/Applications/Observing_the_Earth/The_Living_Planet_Programme/Earth_explorer/GOCE",
-    },
-    {
-      title: "LEO Satellite Constellation Optimization",
-      type: "Research Paper",
-      description:
-        "Machine learning approaches for optimizing satellite constellation deployment and communication scheduling.",
-      authors: "Zhang, K. et al.",
-      year: "2023",
-      link: "https://arxiv.org/abs/2301.04567",
-    },
-    {
-      title: "NASA Space Apps Challenge Dataset",
-      type: "Competition Data",
-      description:
-        "Curated dataset from NASA Space Apps Challenge containing satellite orbital parameters and atmospheric models.",
-      authors: "NASA Space Apps Team",
-      year: "2025",
-      link: "https://spaceappschallenge.org/",
-    },
-    {
-      title: "Starlink Constellation Data",
-      type: "Public Dataset",
-      description:
-        "Historical orbital parameters and constellation performance data for LEO satellite network analysis.",
-      authors: "SpaceX",
-      year: "2019-Present",
-      link: "https://www.spacex.com/starlink",
-    },
-    {
-      title: "Space Environment Data Analysis",
-      type: "Research Paper",
-      description:
-        "Space weather patterns and their impact on satellite communication reliability in LEO environments.",
-      authors: "Johnson, M.A. & Chen, L.",
-      year: "2024",
-      link: "https://doi.org/10.1016/j.ast.2024.105123",
-    },
-  ];
+  // Removed dataSources array since we're redesigning the section
 
   return (
     <main className="relative min-h-screen w-full bg-black">
@@ -365,24 +333,52 @@ const WhoWeAre = () => {
         </div>
       </section>
 
-      {/* Data Sources Section */}
-      {/* <section className="data-sources-section relative z-10 py-16">
+      {/* Research Documentation Section */}
+      <section className="research-docs-section relative z-10 py-16">
         <div className="container mx-auto px-3 md:px-10">
-          <div className="mb-8 px-5">
-            <h2 className="special-font text-6xl font-zentry font-thin text-[#dfdff2] uppercase md:text-8xl">
-              Scie<b>ntific</b> S<b>ou</b>rces
-            </h2>
-          </div>
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            {/* Left side - Text content */}
+            <div className="flex-1 px-5">
+              <h2 className="special-font text-6xl font-zentry font-thin text-[#dfdff2] uppercase md:text-8xl mb-8">
+                Ou<b>r</b> Th<b>ou</b>gh<b>ts</b>
+              </h2>
+              <p className="text-xl font-circular-web text-[#dfdff2]/80 leading-relaxed mb-6">
+                We've organized all our research methodology, energy
+                calculations, and data analysis into one comprehensive PDF
+                document. Not an official citation, just something we thought to
+                include
+              </p>
+            </div>
 
-          <div className="space-y-4">
-            {dataSources.map((source, index) => (
-              <div key={index} className="data-source-item">
-                <DataSourceItem {...source} />
-              </div>
-            ))}
+            {/* Right side - PDF Document */}
+            <div className="flex-shrink-0">
+              <a
+                href="/naasa energy calculations.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block"
+              >
+                <div className="relative bg-gradient-to-br from-violet-500/20 to-blue-500/20 border border-violet-300/30 rounded-xl p-8 hover:from-violet-500/30 hover:to-blue-500/30 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-violet-500/20">
+                  {/* PDF Icon */}
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="w-16 h-16 bg-red-500 rounded-lg flex items-center justify-center group-hover:bg-red-400 transition-colors">
+                      <span className="text-white font-bold text-xl">PDF</span>
+                    </div>
+                  </div>
+
+                  {/* Click indicator */}
+                  <div className="flex items-center justify-center gap-2 text-violet-300 group-hover:text-violet-200 transition-colors">
+                    <TiLocationArrow className="text-sm" />
+                    <span className="font-circular-web text-xs uppercase tracking-wider">
+                      Click to View
+                    </span>
+                  </div>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
-      </section> */}
+      </section>
 
       {/* Special Thanks */}
       <section className="relative z-10 py-16">
@@ -393,7 +389,7 @@ const WhoWeAre = () => {
             </h2>
           </div>
           <div className="border-hsla rounded-lg bg-black/20 backdrop-blur-sm p-8">
-            <p className="font-circular-web text-[#dfdff2]/70 leading-relaxed">
+            <p className="text-xl font-circular-web text-[#dfdff2]/80 leading-relaxed mb-6">
               Lastly, special thanks to the entire NASA Space Apps 2025 Chicago
               team for organizing such an amazing event full of so much amazing
               talent.
