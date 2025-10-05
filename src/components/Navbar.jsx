@@ -14,39 +14,12 @@ const navItems = [
 ];
 
 const NavBar = () => {
-  // State for toggling audio and visual indicator
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  const [isIndicatorActive, setIsIndicatorActive] = useState(false);
-
-  // Refs for audio and navigation container
-  const audioElementRef = useRef(null);
   const navContainerRef = useRef(null);
 
   const { y: currentScrollY } = useWindowScroll();
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [hovered, setHovered] = useState(false);
-
-  // Toggle audio and visual indicator
-  const toggleAudioIndicator = () => {
-    setIsAudioPlaying((prev) => !prev);
-    setIsIndicatorActive((prev) => !prev);
-  };
-
-  useEffect(() => {
-    if (isAudioPlaying) {
-      audioElementRef.current.play();
-    }
-  }, []);
-
-  // Manage audio playback
-  useEffect(() => {
-    if (isAudioPlaying) {
-      audioElementRef.current.play();
-    } else {
-      audioElementRef.current.pause();
-    }
-  }, [isAudioPlaying]);
 
   useEffect(() => {
     if (currentScrollY === 0) {
@@ -134,29 +107,6 @@ const NavBar = () => {
                   </Link>
                 ))}
               </div>
-
-              <button
-                onClick={toggleAudioIndicator}
-                className="ml-10 flex items-center space-x-0.5"
-              >
-                <audio
-                  ref={audioElementRef}
-                  className="hidden"
-                  src="/audio/loop.mp3"
-                  loop
-                />
-                {[1, 2, 3, 4].map((bar) => (
-                  <div
-                    key={bar}
-                    className={clsx("indicator-line", {
-                      active: isIndicatorActive,
-                    })}
-                    style={{
-                      animationDelay: `${bar * 0.1}s`,
-                    }}
-                  />
-                ))}
-              </button>
             </div>
           </nav>
         </header>
