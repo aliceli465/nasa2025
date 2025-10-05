@@ -42,7 +42,7 @@ const EarthSatelliteScene = ({
     priority: "medium",
     description: "",
   });
-  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isFormVisible, setIsFormVisible] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [taskCounter, setTaskCounter] = useState(1);
   const downlinkBeamsRef = useRef([]);
@@ -949,12 +949,6 @@ const EarthSatelliteScene = ({
               <h3 className="text-[#dfdff2] text-base font-bold m-0">
                 Submit Computing Task
               </h3>
-              <button
-                onClick={() => setIsFormVisible(!isFormVisible)}
-                className="bg-none border-none text-[#dfdff2] cursor-pointer text-lg p-1"
-              >
-                {isFormVisible ? "−" : "+"}
-              </button>
             </div>
 
             {isFormVisible && (
