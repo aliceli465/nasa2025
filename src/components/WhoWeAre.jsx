@@ -234,6 +234,11 @@ const WhoWeAre = () => {
       role: "Fullstack",
       image: "/img/zach.jpg",
     },
+    {
+      name: "NASA Space Apps 2025 Chicago Committee",
+      role: "For organizing!!!!",
+      image: "/img/chichi.png",
+    },
   ];
 
   const credits = [
