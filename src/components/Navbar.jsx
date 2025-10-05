@@ -25,6 +25,7 @@ const NavBar = () => {
   const { y: currentScrollY } = useWindowScroll();
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [hovered, setHovered] = useState(false);
 
   // Toggle audio and visual indicator
   const toggleAudioIndicator = () => {
@@ -65,6 +66,21 @@ const NavBar = () => {
     setLastScrollY(currentScrollY);
   }, [currentScrollY, lastScrollY]);
 
+
+  useEffect(() => {
+    let timeout;
+    if (!hovered) {
+      // After 2 seconds of not hovering, fade out
+      timeout = setTimeout(() => setIsNavVisible(false), 2000);
+      navContainerRef.current.classList.add("floating-nav");
+    } else {
+      // Reset visibility while hovered
+      setIsNavVisible(true);
+      navContainerRef.current.classList.add("floating-nav");
+    }
+    return () => clearTimeout(timeout);
+  }, [hovered]);
+
   useEffect(() => {
     gsap.to(navContainerRef.current, {
       y: isNavVisible ? 0 : -100,
@@ -74,64 +90,74 @@ const NavBar = () => {
   }, [isNavVisible]);
 
   return (
-    <div
-      ref={navContainerRef}
-      className="fixed inset-x-0 top-4 z-50 h-16 border-none transition-all duration-700 sm:inset-x-6"
-    >
-      <header className="absolute top-1/2 w-full -translate-y-1/2">
-        <nav className="flex size-full items-center justify-between p-4">
-          {/* Logo and Product button */}
-          <div className="flex items-center gap-7">
-            <img
-              src="/img/sunshin.png"
-              alt="logo"
-              className="w-10 rounded-full"
-            />
+    <>
+      <div
+        onMouseEnter={() => setHovered(true)}
+        className="fixed top-0 left-0 w-full h-6 z-40"
+      />
+      <div
+        ref={navContainerRef}
+        className="fixed inset-x-0 top-4 z-50 h-16 border-none transition-all duration-700 sm:inset-x-6"
+      >
+        <header className="absolute top-1/2 w-full -translate-y-1/2">
+          <nav 
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            className="flex size-full items-center justify-between p-4"
+          >
+            {/* Logo and Product button */}
+            <div className="flex items-center gap-7">
+              <img
+                src="/img/sunshin.png"
+                alt="logo"
+                className="w-10 rounded-full"
+              />
 
-            <Button
-              id="product-button"
-              title="Project Submission"
-              rightIcon={<TiLocationArrow />}
-              containerClass="bg-[#dfdff2] md:flex hidden items-center justify-center gap-1"
-            />
-          </div>
-
-          {/* Navigation Links and Audio Button */}
-          <div className="flex h-full items-center">
-            <div className="hidden md:block">
-              {navItems.map((item, index) => (
-                <Link key={index} to={item.path} className="nav-hover-btn">
-                  {item.name}
-                </Link>
-              ))}
+              <Button
+                id="product-button"
+                title="Project Submission"
+                rightIcon={<TiLocationArrow />}
+                containerClass="bg-[#dfdff2] md:flex hidden items-center justify-center gap-1"
+              />
             </div>
 
-            <button
-              onClick={toggleAudioIndicator}
-              className="ml-10 flex items-center space-x-0.5"
-            >
-              <audio
-                ref={audioElementRef}
-                className="hidden"
-                src="/audio/loop.mp3"
-                loop
-              />
-              {[1, 2, 3, 4].map((bar) => (
-                <div
-                  key={bar}
-                  className={clsx("indicator-line", {
-                    active: isIndicatorActive,
-                  })}
-                  style={{
-                    animationDelay: `${bar * 0.1}s`,
-                  }}
+            {/* Navigation Links and Audio Button */}
+            <div className="flex h-full items-center">
+              <div className="hidden md:block">
+                {navItems.map((item, index) => (
+                  <Link key={index} to={item.path} className="nav-hover-btn">
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+
+              <button
+                onClick={toggleAudioIndicator}
+                className="ml-10 flex items-center space-x-0.5"
+              >
+                <audio
+                  ref={audioElementRef}
+                  className="hidden"
+                  src="/audio/loop.mp3"
+                  loop
                 />
-              ))}
-            </button>
-          </div>
-        </nav>
-      </header>
-    </div>
+                {[1, 2, 3, 4].map((bar) => (
+                  <div
+                    key={bar}
+                    className={clsx("indicator-line", {
+                      active: isIndicatorActive,
+                    })}
+                    style={{
+                      animationDelay: `${bar * 0.1}s`,
+                    }}
+                  />
+                ))}
+              </button>
+            </div>
+          </nav>
+        </header>
+      </div>
+    </>
   );
 };
 
