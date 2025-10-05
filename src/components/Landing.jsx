@@ -51,13 +51,6 @@ const Landing = () => {
               <br />
               Thats the LEO advantage
             </p>
-
-            <Button
-              id="watch-trailer"
-              title="Watch our pitch"
-              leftIcon={<TiLocationArrow />}
-              containerClass="bg-yellow-300 flex-center gap-1"
-            />
           </div>
         </div>
       </div>
