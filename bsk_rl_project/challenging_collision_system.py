@@ -12,6 +12,8 @@ import requests
 import csv
 from io import StringIO
 from datetime import datetime, timedelta
+import sys
+import os
 
 # Skyfield optional - will fall back to basic propagation if not available
 try:
@@ -22,9 +24,9 @@ except ImportError:
     SKYFIELD_AVAILABLE = False
     print("ℹ️  Skyfield not available - using simplified orbital propagation")
 
-from bsk_rl import act, data, obs, scene, sats
-from bsk_rl.sim import dyn, fsw
-from Basilisk.architecture import bskLogging
+# Import BSK-RL using setup helper
+from bsk_rl_setup import get_bsk_rl_imports
+act, data, obs, scene, sats, dyn, fsw, bskLogging = get_bsk_rl_imports()
 
 # Suppress warnings
 bskLogging.setDefaultLogLevel(bskLogging.BSK_WARNING)

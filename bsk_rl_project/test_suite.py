@@ -6,9 +6,9 @@ Quick tests you can run anytime to prove we're using real data
 
 import gymnasium as gym
 import numpy as np
-from bsk_rl import act, data, obs, scene, sats
-from bsk_rl.sim import dyn, fsw
-from Basilisk.architecture import bskLogging
+# Import BSK-RL using setup helper
+from bsk_rl_setup import get_bsk_rl_imports
+act, data, obs, scene, sats, dyn, fsw, bskLogging = get_bsk_rl_imports()
 
 bskLogging.setDefaultLogLevel(bskLogging.BSK_WARNING)
 

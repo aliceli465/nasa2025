@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 import json
 from datetime import datetime
 
-from bsk_rl import act, data, obs, scene, sats
-from bsk_rl.sim import dyn, fsw
-from Basilisk.architecture import bskLogging
+# Import BSK-RL using setup helper
+from bsk_rl_setup import get_bsk_rl_imports
+act, data, obs, scene, sats, dyn, fsw, bskLogging = get_bsk_rl_imports()
 
 # Suppress warnings
 bskLogging.setDefaultLogLevel(bskLogging.BSK_WARNING)

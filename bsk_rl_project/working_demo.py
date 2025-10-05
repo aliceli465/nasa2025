@@ -5,13 +5,17 @@ Based on the examples/simple_environment.ipynb
 """
 
 import gymnasium as gym
+
+# Import BSK-RL using setup helper
+from bsk_rl_setup import get_bsk_rl_imports
+act, data, obs, scene, sats, dyn, fsw, bskLogging = get_bsk_rl_imports()
 import numpy as np
-from bsk_rl import act, data, obs, scene, sats
-from bsk_rl.sim import dyn, fsw
+# BSK-RL imports handled by setup helper
+
 import matplotlib.pyplot as plt
 
 # Suppress Basilisk warnings
-from Basilisk.architecture import bskLogging
+
 bskLogging.setDefaultLogLevel(bskLogging.BSK_WARNING)
 
 print("🛰️  BSK-RL Working Demo: Earth Scanning Satellite")
