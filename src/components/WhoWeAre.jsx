@@ -360,7 +360,7 @@ const WhoWeAre = () => {
       </section>
 
       {/* Data Sources Section */}
-      <section className="data-sources-section relative z-10 py-16">
+      {/* <section className="data-sources-section relative z-10 py-16">
         <div className="container mx-auto px-3 md:px-10">
           <div className="mb-8 px-5">
             <h2 className="special-font text-6xl font-zentry font-thin text-[#dfdff2] uppercase md:text-8xl">
@@ -376,7 +376,7 @@ const WhoWeAre = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Special Thanks */}
       <section className="relative z-10 py-16">
