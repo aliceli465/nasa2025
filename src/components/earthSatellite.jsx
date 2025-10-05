@@ -991,20 +991,6 @@ const EarthSatelliteScene = ({
 
                 <div>
                   <label className="text-[#dfdff2] text-sm mb-1 block">
-                    Files Necessary
-                  </label>
-                  <input
-                    type="text"
-                    name="filesNecessary"
-                    value={formData.filesNecessary}
-                    onChange={handleInputChange}
-                    placeholder="e.g., dataset.csv, model.py"
-                    className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[#dfdff2] text-sm mb-1 block">
                     Data Size
                   </label>
                   <select
@@ -1014,11 +1000,21 @@ const EarthSatelliteScene = ({
                     className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
                     required
                   >
-                    <option value="">Select size</option>
-                    <option value="small">Small (&lt; 1GB)</option>
-                    <option value="medium">Medium (1-10GB)</option>
-                    <option value="large">Large (10-100GB)</option>
-                    <option value="xlarge">Extra Large (&gt; 100GB)</option>
+                    <option value="" className="text-gray-500">
+                      Select size
+                    </option>
+                    <option value="small" className="text-gray-500">
+                      Small (&lt; 1GB)
+                    </option>
+                    <option value="medium" className="text-gray-500">
+                      Medium (1-10GB)
+                    </option>
+                    <option value="large" className="text-gray-500">
+                      Large (10-100GB)
+                    </option>
+                    <option value="xlarge" className="text-gray-500">
+                      Extra Large (&gt; 100GB)
+                    </option>
                   </select>
                 </div>
 
@@ -1032,10 +1028,18 @@ const EarthSatelliteScene = ({
                     onChange={handleInputChange}
                     className="w-full p-2.5 rounded border border-white/20 bg-white/10 text-[#dfdff2] text-sm"
                   >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
+                    <option value="low" className="text-gray-500">
+                      Low
+                    </option>
+                    <option value="medium" className="text-gray-500">
+                      Medium
+                    </option>
+                    <option value="high" className="text-gray-500">
+                      High
+                    </option>
+                    <option value="urgent" className="text-gray-500">
+                      Urgent
+                    </option>
                   </select>
                 </div>
 
